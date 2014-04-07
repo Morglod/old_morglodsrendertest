@@ -1,0 +1,9 @@
+/obj
+/CppCheckResults.xml
+/bin/Debug
+/bin/Release/Misc
+/bin/Release/Data
+/bin/Release/Thumbs.db
+
+/bin/Release/AntTweakBar.dll
+/bin/Release/DMorglodsRenderTest.exe
