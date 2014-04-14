@@ -19,6 +19,14 @@
 				<Linker>
 					<Add option="-pg -lgmon" />
 					<Add library="..\MorglodsRender\BUILD\libdMorglodsRender.a" />
+					<Add library="SOIL" />
+					<Add library="glfw3dll" />
+					<Add library="glew" />
+					<Add library="opengl32" />
+					<Add library="glu32" />
+					<Add library="gdi32" />
+					<Add library="winmm" />
+					<Add library="zlib" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -27,7 +35,13 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-O3" />
+				</Compiler>
 				<Linker>
+					<Add library="opengl32" />
+					<Add library="glfw3dll" />
 					<Add library="..\MorglodsRender\BUILD\libMorglodsRender.a" />
 				</Linker>
 			</Target>
@@ -40,13 +54,13 @@
 			<Add directory="C:/Libs/AntTweakBar_MinGW_GLOnly/include" />
 		</Compiler>
 		<Linker>
-			<Add library="opengl32" />
-			<Add library="glfw3dll" />
 			<Add directory="../MorglodsRender" />
 			<Add directory="C:/Libs/AntTweakBar_MinGW_GLOnly/lib" />
 		</Linker>
 		<Unit filename="TestLods.hpp" />
+		<Unit filename="TestSponza.hpp" />
 		<Unit filename="TestTriangle.hpp" />
+		<Unit filename="TestUI.hpp" />
 		<Unit filename="main.cpp" />
 		<Extensions>
 			<code_completion />

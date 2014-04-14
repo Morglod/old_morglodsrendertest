@@ -67,7 +67,7 @@ public:
 
         geom = new MR::GeometryBuffer(vbuffer, nullptr, vformat, nullptr, MR::IGeometryBuffer::Draw_Triangles);
 
-        glClearColor(0.8f, 0.82f, 0.83f, 1.0f);
+        glClearColor(0.2f, 0.2, 0.2, 1.0f);
         glDisable(GL_DEPTH_TEST);
         glDisable(GL_CULL_FACE);
 

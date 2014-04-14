@@ -1,9 +1,9 @@
 # depslib dependency file v1.0
-1396824039 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\main.cpp
+1397485043 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\main.cpp
 	<MorglodsRender.hpp>
+	<Types.hpp>
 	<SimpleApp.hpp>
-	"TestLods.hpp"
-	"TestTriangle.hpp"
+	"TestSponza.hpp"
 
 1387381049 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.h
 	<GL\glew.h>
@@ -170,7 +170,7 @@
 	<glm/glm.hpp>
 	<glm/gtc/matrix_transform.hpp>
 
-1395443317 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shader.hpp
+1397224045 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shader.hpp
 	"Config.hpp"
 	"ResourceManager.hpp"
 	"Events.hpp"
@@ -210,12 +210,13 @@
 1388757720 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\momodelimporter.hpp
 	<fstream>
 
-1393042277 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\mesh.hpp
+1397489706 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\mesh.hpp
 	"ResourceManager.hpp"
 
-1393798921 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\renderwindow.hpp
+1397247683 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\renderwindow.hpp
 	"Events.hpp"
 	"RenderContext.hpp"
+	"Types.hpp"
 
 1396515003 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\rendercontext.hpp
 	"Config.hpp"
@@ -257,19 +258,20 @@
 1391457523 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\memory.hpp
 	<stack>
 
-1396518772 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\config.hpp
+1397487225 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\config.hpp
 
 1393042829 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene.hpp
 	"Config.hpp"
 	"Events.hpp"
 	"Entity.hpp"
 
-1396285062 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\types.hpp
+1397361421 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\types.hpp
 	<vector>
 	<algorithm>
 	<memory>
 	<string>
 	<string.h>
+	<bitset>
 
 1395422218 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\simpleapp.hpp
 	"RenderContext.hpp"
@@ -280,26 +282,34 @@
 	<iostream>
 	<windows.h>
 
-1395395730 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\ui.hpp
+1397372061 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\ui.hpp
 	"Events.hpp"
 	<glm/glm.hpp>
 	<glm/gtc/matrix_transform.hpp>
 	<vector>
 
-1395445680 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\light.hpp
+1397224045 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\light.hpp
 	"Config.hpp"
 	"Types.hpp"
 	"Shader.hpp"
 	<glm/glm.hpp>
 
-1396823801 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometrybufferv2.hpp
+1397224045 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometrybufferv2.hpp
 	"Types.hpp"
 	"Config.hpp"
 	<glm/glm.hpp>
 	<glm/gtc/matrix_transform.hpp>
 	<vector>
 
-1396529929 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testlods.hpp
+1396841671 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testlods.hpp
 
-1396824007 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testtriangle.hpp
+1396836299 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testtriangle.hpp
+
+1397491131 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testsponza.hpp
+
+1397484984 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testui.hpp
+
+1397357987 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\time.hpp
+	<chrono>
+	<string>
 

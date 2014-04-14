@@ -2,7 +2,7 @@ MR::GeometryBuffer* createScreenQuad(){
     return MR::GeometryBuffer::Plane(glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0,0,0), MR::IGLBuffer::Static+MR::IGLBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
 }
 
-class TestLods : public MR::SimpleApp {
+class TestSponza : public MR::SimpleApp {
 public:
     float camera_moving_speed = 1.0f;
 
@@ -14,8 +14,6 @@ public:
     MR::RenderTarget* rtarget;
 
     MR::CubeMap* env_cubemap;
-
-    MR::UIElement* ui_test_box;
 
     double mouseX = 0.0, mouseY = 0.0;
     const float MOUSE_SPEED = 70.0f;
@@ -70,39 +68,50 @@ public:
 
         //env_cubemap = new MR::CubeMap(MR::TextureManager::Instance(), "EnvCubemap", "FromMem", 512, 512);
 
+        MR::Model* sponza_model = MR::ModelManager::Instance()->NeedModel("Data/Sponza.momodel");
+        for(unsigned short meN = 0; meN < sponza_model->GetLodN(0)->GetMeshesNum(); ++meN){
+            if(sponza_model->GetLodN(0)->GetMesh(meN)->GetMaterial() != nullptr){
+                sponza_model->GetLodN(0)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetShader(shader_render_to_texture);
+            }
+        }
+
+        MR::Entity* sponza_entity = scene.CreateEntity(sponza_model);
+        sponza_entity->GetTransformP()->SetScale( new glm::vec3(0.005f, 0.005f, 0.005f) );
+
         MR::Model* nano_model = MR::ModelManager::Instance()->NeedModel("Data/Nanosuit.momodel");
-        for(unsigned int matN = 0; matN < nano_model->GetLodN(0)->GetMesh(0)->GetMaterialsNum(); ++matN){
-            nano_model->GetLodN(0)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->SetShader(shader_render_to_texture);
+        for(unsigned short meN = 0; meN < nano_model->GetLodN(0)->GetMeshesNum(); ++meN){
+            if(nano_model->GetLodN(0)->GetMesh(meN)->GetMaterial() != nullptr){
+                nano_model->GetLodN(0)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetShader(shader_render_to_texture);
+            }
         }
 
         nano_model->AddLod( MR::ModelManager::Instance()->NeedModel("Data/nanosuit_sprite.momodel")->GetLodN(0) );
-        for(unsigned int matN = 0; matN < nano_model->GetLodN(1)->GetMesh(0)->GetMaterialsNum(); ++matN){
-            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->SetShader(shader_render_to_texture_discard);
-            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapR(MR::TextureSettings::Wrap::CLAMP);
-            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapS(MR::TextureSettings::Wrap::CLAMP);
-            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapT(MR::TextureSettings::Wrap::CLAMP);
-            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->SetTwoSided(true);
+        for(unsigned short meN = 0; meN < nano_model->GetLodN(1)->GetMeshesNum(); ++meN){
+            if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial() != nullptr){
+                nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetShader(shader_render_to_texture_discard);
+                if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture() != nullptr){
+                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapR(MR::TextureSettings::Wrap::CLAMP);
+                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapS(MR::TextureSettings::Wrap::CLAMP);
+                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapT(MR::TextureSettings::Wrap::CLAMP);
+                }
+                nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetTwoSided(true);
+            }
         }
         nano_model->SetDistStep(8.0f);
 
         MR::Entity* nano_entity = scene.CreateEntity(nano_model);
         nano_entity->GetTransformP()->SetScale( new glm::vec3(0.1f, 0.1f, 0.1f) );
 
-        const int inst_num = 10;
+        /*const int inst_num = 10;
         for(int i = 1; i < inst_num; ++i){
             for(int j = 0; j < inst_num; ++j){
                 MR::Entity* ent = nano_entity->Copy();
                 ent->GetTransformP()->SetPos( new glm::vec3( i, -0.8f, -j) );
                 scene.AddEntity(ent);
             }
-        }
+        }*/
 
         screen_quad = createScreenQuad();
-
-        MR::UIManager::Instance()->SetScreenRect(glm::vec2((float)WINDOW_WIDTH, (float)WINDOW_HEIGHT));
-        ui_test_box = new MR::UIElement(MR::UIManager::Instance(), MR::Rect(10.0f, 10.0f, 100.0f, 200.0f));
-        ui_test_box->SetColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        MR::UIManager::Instance()->Add(ui_test_box);
 
         glClearColor(0.8f, 0.82f, 0.83f, 1.0f);
 
@@ -196,6 +205,7 @@ public:
         //delete env_cubemap;
     }
 
-    TestLods() : SimpleApp() {}
-    virtual ~TestLods() {}
+    TestSponza() : SimpleApp() {}
+    virtual ~TestSponza() {}
 };
+
