@@ -18,7 +18,8 @@ public:
     double mouseX = 0.0, mouseY = 0.0;
     const float MOUSE_SPEED = 70.0f;
 
-    MR::GeometryBuffer* screen_quad;
+    MR::IGeometry* screen_quad;
+    MR::GeometryBuffer* screen_quad_buffer;
 
     MR::Shader* MakeShader(MR::SubShader* s1, MR::SubShader* s2){
         MR::Shader* shader = dynamic_cast<MR::Shader*>(MR::ShaderManager::Instance()->Create("Auto", "FromSubs"));
@@ -38,7 +39,7 @@ public:
             std::string("\nMem Total(kb): ") + std::to_string(MR::MachineInfo::total_memory_kb()) + std::string(" Current(kb): ") + std::to_string(MR::MachineInfo::current_memory_kb()) + "\n\n", MR_LOG_LEVEL_INFO);
 
         MR::Log::LogString("\nVBUM: " + std::to_string(MR::MachineInfo::FeatureNV_GPUPTR()));
-        MR::Log::LogString("\nDirect: " + std::to_string(MR::MachineInfo::IsDirectStateAccessSupported()));
+        MR::Log::LogString("Direct: " + std::to_string(MR::MachineInfo::IsDirectStateAccessSupported()));
 
         shader_default = MakeShader(MR::SubShader::DefaultFrag(), MR::SubShader::DefaultVert());
         shader_render_to_texture = MakeShader(MR::SubShader::DefaultRTTFrag(), MR::SubShader::DefaultRTTVert());
@@ -90,9 +91,11 @@ public:
             if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial() != nullptr){
                 nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetShader(shader_render_to_texture_discard);
                 if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture() != nullptr){
-                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapR(MR::TextureSettings::Wrap::CLAMP);
-                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapS(MR::TextureSettings::Wrap::CLAMP);
-                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapT(MR::TextureSettings::Wrap::CLAMP);
+                    if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings() != nullptr){
+                        nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapR(MR::TextureSettings::Wrap::CLAMP);
+                        nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapS(MR::TextureSettings::Wrap::CLAMP);
+                        nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapT(MR::TextureSettings::Wrap::CLAMP);
+                    }
                 }
                 nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetTwoSided(true);
             }
@@ -102,18 +105,12 @@ public:
         MR::Entity* nano_entity = scene.CreateEntity(nano_model);
         nano_entity->GetTransformP()->SetScale( new glm::vec3(0.1f, 0.1f, 0.1f) );
 
-        /*const int inst_num = 10;
-        for(int i = 1; i < inst_num; ++i){
-            for(int j = 0; j < inst_num; ++j){
-                MR::Entity* ent = nano_entity->Copy();
-                ent->GetTransformP()->SetPos( new glm::vec3( i, -0.8f, -j) );
-                scene.AddEntity(ent);
-            }
-        }*/
-
-        screen_quad = createScreenQuad();
+        screen_quad_buffer = createScreenQuad();
+        screen_quad = new MR::Geometry(screen_quad_buffer, 0, 4, 4);
 
         glClearColor(0.8f, 0.82f, 0.83f, 1.0f);
+
+        glEnable(GL_DEPTH_TEST);
 
         return true;
     }
@@ -139,8 +136,8 @@ public:
         }
     }
 
-    void DrawToCubeMap(){
-        context.BindTexture(MR::Texture::Target::CubeMap, env_cubemap->GetGLTexture(), 1);
+    /*void DrawToCubeMap(){
+        context->BindTexture(MR::Texture::Target::CubeMap, env_cubemap->GetGLTexture(), 1);
         env_cubemap->GetRenderTarget()->Bind(context);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -148,35 +145,36 @@ public:
 
         env_cubemap->GetRenderTarget()->Unbind();
         window->ResetViewport(context);
-    }
+    }*/
 
     void DrawToRenderTarget(){
         //Bind RenderTarget ColorBuffer as TextureUnit 1
-        context.BindTexture(MR::Texture::Target::Base2D, rtarget->GetTargetTexture(0), 1);
+        context->BindTexture((unsigned int)MR::ITexture::Target::Base2D, rtarget->GetTargetTexture(0), 1);
 
         //Bind RenderTarget DepthBuffer as TextureUnit 2
-        context.BindTexture(MR::Texture::Target::Base2D, rtarget->GetTargetTexture(1), 2);
+        context->BindTexture((unsigned int)MR::ITexture::Target::Base2D, rtarget->GetTargetTexture(1), 2);
 
         //Bind RenderTarget and clear it
-        rtarget->Bind(context);
+        context->BindRenderTarget(rtarget);
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
 
         DrawScene();
 
         //Return to normal state
-        rtarget->Unbind();
+        context->UnBindRenderTarget();
         window->ResetViewport(context);
     }
 
     void DrawFromRenderTarget(const float& delta){
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
 
         glDisable(GL_CULL_FACE);
-        context.UseShader(shader_default_screen);
-        context.DrawGeometryBuffer(screen_quad);
+        context->UseShader(shader_default_screen);
+        context->DrawGeometry(screen_quad);
 
-        MR::UIManager::Instance()->Draw(&context, delta);
+        MR::UIManager::Instance()->Draw(context, delta);
         glEnable(GL_CULL_FACE);
     }
 
@@ -201,6 +199,7 @@ public:
 
     void Free() {
         delete screen_quad;
+        delete screen_quad_buffer;
         delete rtarget;
         //delete env_cubemap;
     }
