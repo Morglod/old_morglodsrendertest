@@ -12,6 +12,7 @@ copy %buildres%shader_default_screen.moshader %outdata%shader_default_screen.mos
 copy %buildres%shader_parallax.moshader %outdata%shader_parallax.moshader
 copy %buildres%Sibenik.momodel %outdata%Sibenik.momodel
 copy %buildres%SkyMap.momodel %outdata%SkyMap.momodel
+copy %buildres%NormalDispl.momodel %outdata%NormalDispl.momodel
 
 copy %resdir%nano_sprite_forward.png %outdata%nano_sprite_forward.png
 copy %resdir%nano_sprite_side.png %outdata%nano_sprite_side.png

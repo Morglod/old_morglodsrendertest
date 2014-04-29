@@ -27,6 +27,7 @@
 					<Add library="gdi32" />
 					<Add library="winmm" />
 					<Add library="zlib" />
+					<Add library="pthread" />
 				</Linker>
 			</Target>
 			<Target title="Release">
