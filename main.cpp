@@ -11,11 +11,11 @@
 
 //  #include "TestLods.hpp"
 //  #include "TestTriangle.hpp"
-//  #include "TestSponza.hpp"
-  #include "TestUI.hpp"
+  #include "TestSponza.hpp"
+//  #include "TestUI.hpp"
 
 int main(){
-    TestUI app;
+    TestSponza app;
     app.Go("MorglodsRender test", WINDOW_WIDTH, WINDOW_HEIGHT);
 
     return 0;
