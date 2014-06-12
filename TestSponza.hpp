@@ -19,48 +19,80 @@ public:
         MR::Log::LogString("\nVBUM: " + std::to_string(MR::MachineInfo::FeatureNV_GPUPTR()));
         MR::Log::LogString("Direct: " + std::to_string(MR::MachineInfo::IsDirectStateAccessSupported()));
 
+        MR::TextureManager::Instance()->SetCompressionMode(MR::ITexture::CompressionMode::ETC2);
+
+        ///TIMER
+        MR::Timer<MR::Time::HighResolutionClock, MR::Time::Milliseconds> loading_timer;
+        loading_timer.Start();
+
         MR::Model* sponza_model = MR::ModelManager::Instance()->NeedModel("Data/Sponza.momodel");
-        for(unsigned short meN = 0; meN < sponza_model->GetLodN(0)->GetMeshesNum(); ++meN){
-            if(sponza_model->GetLodN(0)->GetMesh(meN)->GetMaterial() != nullptr){
-                camera->AttachToShader( sponza_model->GetLodN(0)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetShader() );
-            }
-        }
 
         MR::Entity* sponza_entity = scene.CreateEntity(sponza_model);
         sponza_entity->GetTransformP()->SetScale( new glm::vec3(0.005f, 0.005f, 0.005f) );
 
-        MR::Model* nano_model = MR::ModelManager::Instance()->NeedModel("Data/Nanosuit.momodel");
-        for(unsigned short meN = 0; meN < nano_model->GetLodN(0)->GetMeshesNum(); ++meN){
-            if(nano_model->GetLodN(0)->GetMesh(meN)->GetMaterial() != nullptr){
-                camera->AttachToShader( nano_model->GetLodN(0)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetShader() );
-            }
-        }
+        class NanoModelLoaded : public MR::EventHandle<MR::Resource*> {
+        public:
+            class NanoSpriteModelLoaded : public MR::EventHandle<MR::Resource*> {
+            public:
+                MR::Model* nano_model;
+                MR::Model* sprite_model;
 
-        nano_model->AddLod( MR::ModelManager::Instance()->NeedModel("Data/nanosuit_sprite.momodel")->GetLodN(0) );
-        for(unsigned short meN = 0; meN < nano_model->GetLodN(1)->GetMeshesNum(); ++meN){
-            if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial() != nullptr){
-                //nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetShader(shader_render_to_texture_discard);
-                if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture() != nullptr){
-                    if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture()->GetSettings() != nullptr){
-                        nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture()->GetSettings()->SetWrapR(MR::TextureSettings::Wrap::CLAMP);
-                        nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture()->GetSettings()->SetWrapS(MR::TextureSettings::Wrap::CLAMP);
-                        nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture()->GetSettings()->SetWrapT(MR::TextureSettings::Wrap::CLAMP);
+                void Invoke(MR::EventListener<MR::Resource*>*, MR::Resource* res) override {
+                    nano_model->AddLod( sprite_model->GetLodN(0) );
+                    for(unsigned short meN = 0; meN < nano_model->GetLodN(1)->GetMeshesNum(); ++meN){
+                        if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial() != nullptr){
+                            //nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetShader(shader_render_to_texture_discard);
+                            if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture() != nullptr){
+                                if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture()->GetSettings() != nullptr){
+                                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture()->GetSettings()->SetWrapR(MR::TextureSettings::Wrap::CLAMP);
+                                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture()->GetSettings()->SetWrapS(MR::TextureSettings::Wrap::CLAMP);
+                                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetDiffuseTexture()->GetSettings()->SetWrapT(MR::TextureSettings::Wrap::CLAMP);
+                                }
+                            }
+                            if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture() != nullptr){
+                                if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture()->GetSettings() != nullptr){
+                                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture()->GetSettings()->SetWrapR(MR::TextureSettings::Wrap::CLAMP);
+                                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture()->GetSettings()->SetWrapS(MR::TextureSettings::Wrap::CLAMP);
+                                    nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture()->GetSettings()->SetWrapT(MR::TextureSettings::Wrap::CLAMP);
+                                }
+                            }
+                            nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetTwoSided(true);
+                        }
                     }
+                    nano_model->SetDistStep(8.0f);
                 }
-                if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture() != nullptr){
-                    if(nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture()->GetSettings() != nullptr){
-                        nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture()->GetSettings()->SetWrapR(MR::TextureSettings::Wrap::CLAMP);
-                        nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture()->GetSettings()->SetWrapS(MR::TextureSettings::Wrap::CLAMP);
-                        nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->GetAmbientTexture()->GetSettings()->SetWrapT(MR::TextureSettings::Wrap::CLAMP);
-                    }
-                }
-                nano_model->GetLodN(1)->GetMesh(meN)->GetMaterial()->GetPass(0)->SetTwoSided(true);
+
+                NanoSpriteModelLoaded(MR::Model* nm, MR::Model* sm) : nano_model(nm), sprite_model(sm) {}
+            };
+
+            MR::Model* nano_model;
+            MR::Model* sprite_model;
+
+            void Invoke(MR::EventListener<MR::Resource*>*, MR::Resource* res) override {
+                sprite_model = MR::ModelManager::Instance()->NeedModel("Data/nanosuit_sprite.momodel");
+                sprite_model->OnLoad.RegisterHandle(new NanoSpriteModelLoaded(nano_model, sprite_model));
             }
-        }
-        nano_model->SetDistStep(8.0f);
+            NanoModelLoaded(MR::Model* nm) : nano_model(nm) {}
+        };
+
+        MR::Model* nano_model = MR::ModelManager::Instance()->NeedModel("Data/Nanosuit.momodel");
+        nano_model->OnLoad.RegisterHandle(new NanoModelLoaded(nano_model));
+
+        ///TIMER
+        loading_timer.Stop();
+        std::cout << "\n\nLoading time: " << loading_timer.TimerTime().count() << std::endl;
 
         MR::Entity* nano_entity = scene.CreateEntity(nano_model);
         nano_entity->GetTransformP()->SetScale( new glm::vec3(0.1f, 0.1f, 0.1f) );
+
+        scene.AddLight(
+            MR::LightSource::CreatePointLight(glm::vec3(3.0f,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, 2.0f, 10.0f)
+        );
+        scene.AddLight(
+            MR::LightSource::CreateDirLight(glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f)), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
+        );
+
+        scene.SetFog(0.5f, 0.9f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 
         glClearColor(0.8f, 0.82f, 0.83f, 1.0f);
 

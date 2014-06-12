@@ -63,6 +63,7 @@
 		<Unit filename="TestTriangle.hpp" />
 		<Unit filename="TestUI.hpp" />
 		<Unit filename="main.cpp" />
+		<Unit filename="pthreads_ThreadTest.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
