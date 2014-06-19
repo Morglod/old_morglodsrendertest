@@ -85,3 +85,5 @@
 /bin/Release/PublicTest/libgcc_s_dw2-1.dll
 /bin/Release/PublicTest/libstdc++-6.dll
 /bin/Release/PublicTest/pthreadGC2.dll
+/bin/Release/PublicTest
+/bin/Release/Data2

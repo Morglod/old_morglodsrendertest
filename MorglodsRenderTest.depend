@@ -106,8 +106,9 @@
 1387382320 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\transformation.h
 	"MorglodsRender.h"
 
-1401404688 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.hpp
+1402750957 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.hpp
 	"Config.hpp"
+	"ConfigClass.hpp"
 	"Camera.hpp"
 	"Entity.hpp"
 	"Events.hpp"
@@ -146,13 +147,13 @@
 	<stdio.h>
 	<locale>
 
-1401891227 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resourcemanager.hpp
+1402607894 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resourcemanager.hpp
 	"Config.hpp"
 	"Events.hpp"
 	"Threads.hpp"
 	<queue>
 
-1401862162 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\texture.hpp
+1402750558 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\texture.hpp
 	"Config.hpp"
 	"ResourceManager.hpp"
 	"Log.hpp"
@@ -161,7 +162,7 @@
 	<glm/glm.hpp>
 	<glm/gtc/matrix_transform.hpp>
 
-1398849540 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\log.hpp
+1403185911 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\log.hpp
 	<vector>
 	<algorithm>
 	<string>
@@ -173,7 +174,7 @@
 	<glm/glm.hpp>
 	<glm/gtc/matrix_transform.hpp>
 
-1401747461 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shader.hpp
+1402750606 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shader.hpp
 	"Config.hpp"
 	"ResourceManager.hpp"
 	"Events.hpp"
@@ -199,7 +200,7 @@
 	"GeometryBuffer.hpp"
 	"Shader.hpp"
 
-1398849540 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\events.hpp
+1403185741 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\events.hpp
 	"Types.hpp"
 	<vector>
 	<algorithm>
@@ -219,7 +220,7 @@
 1398849540 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\mesh.hpp
 	"ResourceManager.hpp"
 
-1402596365 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\renderwindow.hpp
+1402599542 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\renderwindow.hpp
 	"Events.hpp"
 	"Types.hpp"
 	"GL/Context.hpp"
@@ -231,7 +232,7 @@
 	<glm/glm.hpp>
 	<stack>
 
-1401823199 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\model.hpp
+1402750537 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\model.hpp
 	"Mesh.hpp"
 	"ResourceManager.hpp"
 	"Events.hpp"
@@ -266,7 +267,7 @@
 1391457523 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\memory.hpp
 	<stack>
 
-1401955277 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\config.hpp
+1402750830 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\config.hpp
 
 1399146004 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene.hpp
 	"Config.hpp"
@@ -274,7 +275,7 @@
 	"Entity.hpp"
 	"Light.hpp"
 
-1398939736 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\types.hpp
+1403131101 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\types.hpp
 	<vector>
 	<algorithm>
 	<memory>
@@ -283,7 +284,7 @@
 	<bitset>
 	<glm/glm.hpp>
 
-1402596584 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\simpleapp.hpp
+1402622374 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\simpleapp.hpp
 	"RenderSystem.hpp"
 	"RenderWindow.hpp"
 	"Exception.hpp"
@@ -317,7 +318,7 @@
 
 1396836299 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testtriangle.hpp
 
-1401893993 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testsponza.hpp
+1403186880 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testsponza.hpp
 
 1398768784 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testui.hpp
 
@@ -331,7 +332,7 @@
 
 1401750373 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\threads.hpp
 
-1402596450 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\gl\context.hpp
+1402597846 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\gl\context.hpp
 	"..//Threads.hpp"
 	<vector>
 	<string>
@@ -526,4 +527,9 @@
 1399872012 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\gl\debug.hpp
 
 1401750373 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\\threads.hpp
+
+1402750896 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\configclass.hpp
+	<string>
+	<sstream>
+	<map>
 

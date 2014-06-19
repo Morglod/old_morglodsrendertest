@@ -5,6 +5,8 @@ public:
     double mouseX = 0.0, mouseY = 0.0;
     const float MOUSE_SPEED = 70.0f;
 
+    MR::ILightSource* light_point = 0;
+
     bool Setup() {
         //Write user's machine info
         MR::Log::LogString(
@@ -82,15 +84,15 @@ public:
         loading_timer.Stop();
         std::cout << "\n\nLoading time: " << loading_timer.TimerTime().count() << std::endl;
 
-        MR::Entity* nano_entity = scene.CreateEntity(nano_model);
-        nano_entity->GetTransformP()->SetScale( new glm::vec3(0.1f, 0.1f, 0.1f) );
+        /*MR::Entity* nano_entity = scene.CreateEntity(nano_model);
+        nano_entity->GetTransformP()->SetScale( new glm::vec3(0.1f, 0.1f, 0.1f) );*/
 
-        scene.AddLight(
-            MR::LightSource::CreatePointLight(glm::vec3(3.0f,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(1.0f, 0.0f, 0.0f), 1.0f, 2.0f, 10.0f)
-        );
-        scene.AddLight(
+        light_point = MR::LightSource::CreatePointLight(glm::vec3(3.0f,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, 3.0f, 10.0f);
+
+        //scene.AddLight( light_point );
+        /*scene.AddLight(
             MR::LightSource::CreateDirLight(glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f)), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
-        );
+        );*/
 
         scene.SetFog(0.5f, 0.9f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
 
@@ -114,6 +116,11 @@ public:
         if(glfwGetKey(window->GetHandle(), GLFW_KEY_D)) camera->MoveLeft( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
         if(glfwGetKey(window->GetHandle(), GLFW_KEY_V)) camera->Move( delta*glm::vec3(0.0f,camera_moving_speed,0.0f) );
         if(glfwGetKey(window->GetHandle(), GLFW_KEY_C)) camera->Move( -delta*glm::vec3(0.0f,camera_moving_speed,0.0f) );
+
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_LEFT)) light_point->GetPosP()->x += delta*1.0f; //camera->MoveForward( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_RIGHT)) light_point->GetPosP()->x -= delta*1.0f; //camera->MoveForward( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_UP)) light_point->GetPosP()->z += delta*1.0f; //camera->MoveLeft( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_DOWN)) light_point->GetPosP()->z -= delta*1.0f; //camera->MoveLeft( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
 
         if(glfwGetMouseButton(window->GetHandle(), GLFW_MOUSE_BUTTON_RIGHT)) {
             window->SetMousePos(SCREEN_CENTER_X, SCREEN_CENTER_Y);
