@@ -58,7 +58,10 @@
 			<Add directory="../MorglodsRender" />
 			<Add directory="C:/Libs/AntTweakBar_MinGW_GLOnly/lib" />
 		</Linker>
+		<Unit filename="ShaderEditor.cpp" />
+		<Unit filename="ShaderEditor.hpp" />
 		<Unit filename="TestLods.hpp" />
+		<Unit filename="TestOneBufferGeometry.hpp" />
 		<Unit filename="TestSponza.hpp" />
 		<Unit filename="TestTriangle.hpp" />
 		<Unit filename="TestUI.hpp" />

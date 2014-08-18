@@ -7,32 +7,112 @@ public:
 
     MR::ILightSource* light_point = 0;
 
+    MR::Query qTimeElapsed = MR::Query(MR::Query::Target::TimeElapsed);
+
     bool Setup() {
         //Write user's machine info
-        MR::Log::LogString(
-            std::string("Machine info:") +
-            std::string("\nVersion: ") + MR::MachineInfo::gl_version_string() +
-            std::string("\nGLSL: ") + MR::MachineInfo::gl_version_glsl() +
-            std::string("\nOpenGL: ") + std::to_string(MR::MachineInfo::gl_version_major()) + std::string(" ") + std::to_string(MR::MachineInfo::gl_version_minor()) +
-            std::string("\nGPU: ") + MR::MachineInfo::gpu_name() + std::string(" from ") + MR::MachineInfo::gpu_vendor_string() +
-            std::string("\nMem Total(kb): ") + std::to_string(MR::MachineInfo::total_memory_kb()) + std::string(" Current(kb): ") + std::to_string(MR::MachineInfo::current_memory_kb()) + "\n\n"
-        , MR_LOG_LEVEL_INFO);
+        MR::MachineInfo::PrintInfo();
 
-        MR::Log::LogString("\nVBUM: " + std::to_string(MR::MachineInfo::FeatureNV_GPUPTR()));
-        MR::Log::LogString("Direct: " + std::to_string(MR::MachineInfo::IsDirectStateAccessSupported()));
-
-        MR::TextureManager::Instance()->SetCompressionMode(MR::ITexture::CompressionMode::ETC2);
+        MR::TextureManager::GetInstance()->SetCompressionMode(MR::ITexture::CompressionMode::ETC2);
 
         ///TIMER
+        qTimeElapsed.Begin();
         MR::Timer<MR::Time::HighResolutionClock, MR::Time::Milliseconds> loading_timer;
         loading_timer.Start();
 
-        MR::Model* sponza_model = MR::ModelManager::Instance()->NeedModel("Data/Sponza.momodel");
+        MR::Model* sponza_model = MR::ModelManager::GetInstance()->NeedModel("Data/Sponza.momodel");
 
         MR::Entity* sponza_entity = scene.CreateEntity(sponza_model);
-        sponza_entity->GetTransformP()->SetScale( new glm::vec3(0.005f, 0.005f, 0.005f) );
+        sponza_entity->GetTransformPtr()->SetScale( new glm::vec3(0.005f, 0.005f, 0.005f) );
 
-        class NanoModelLoaded : public MR::EventHandle<MR::Resource*> {
+        /*for(int i = 0; i < 5; ++i){
+            MR::Entity* entI = scene.CreateEntity(sponza_model);
+            entI->GetTransformPtr()->SetScale( new glm::vec3(0.005f, 0.005f, 0.005f) );
+            entI->GetTransformPtr()->SetPos(glm::vec3(0.0f, 0.0f, 15.0f*i));
+        }*/
+
+        ///TIMER
+        loading_timer.Stop();
+        std::cout << "\n\nLoading time: " << loading_timer.TimerTime().count() << std::endl;
+        qTimeElapsed.End();
+
+        uint64_t gpu_time = 0;
+        bool gpu_timer = qTimeElapsed.GetResult(&gpu_time);
+        MR::Log::LogString("\rTime elapsed: " + std::to_string(gpu_time));
+
+        light_point = MR::LightSource::CreatePointLight(glm::vec3(-3.0f,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, 3.0f, 10.0f);
+        scene.AddLight( light_point );
+
+        for(size_t il = 0; il < 3; ++il) {
+            scene.AddLight( MR::LightSource::CreatePointLight(glm::vec3(0.0f + 3.0f * (float)il,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(0.0f, 0.0f, 0.0f), 10.0f / (il+0.1f), (float)il +0.001f, 10.0f) );
+        }
+
+        /*scene.AddLight(
+            MR::LightSource::CreateDirLight(glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f)), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
+        );*/
+
+        scene.SetFog(0.5f, 0.9f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+
+        //glClearColor(0.8f, 0.82f, 0.83f, 1.0f);
+
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_CULL_FACE);
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+
+        return true;
+    }
+
+    void Input(const float& delta){
+        /*glfwGetMousePo
+        context.->GetMousePos(&mouseX, &mouseY);
+
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_SPACE)) camera_moving_speed = 15.0f;
+        else camera_moving_speed = 1.0f;
+
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_W)) camera->MoveForward( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_S)) camera->MoveForward( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_A)) camera->MoveLeft( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_D)) camera->MoveLeft( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_V)) camera->Move( delta*glm::vec3(0.0f,camera_moving_speed,0.0f) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_C)) camera->Move( -delta*glm::vec3(0.0f,camera_moving_speed,0.0f) );
+
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_LEFT)) light_point->GetPosP()->x += delta*1.0f; //camera->MoveForward( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_RIGHT)) light_point->GetPosP()->x -= delta*1.0f; //camera->MoveForward( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_UP)) light_point->GetPosP()->z += delta*1.0f; //camera->MoveLeft( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+        if(glfwGetKey(window->GetHandle(), GLFW_KEY_DOWN)) light_point->GetPosP()->z -= delta*1.0f; //camera->MoveLeft( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
+
+        if(glfwGetMouseButton(window->GetHandle(), GLFW_MOUSE_BUTTON_RIGHT)) {
+            window->SetMousePos(SCREEN_CENTER_X, SCREEN_CENTER_Y);
+
+            camera->Roll(((float)(SCREEN_CENTER_X - mouseX))*delta*MOUSE_SPEED);
+            camera->Yaw(((float)(SCREEN_CENTER_Y - mouseY))*delta*MOUSE_SPEED);
+        }*/
+    }
+
+    void Frame(const float& delta) {
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        Input(delta);
+        pipeline->Frame(delta);
+
+        /*if(window->IsIconified()) {
+            Sleep(1000);
+        }
+        else if(!window->IsFocused()) {
+            Sleep(500);
+        }*/
+    }
+
+    void Free() {  }
+
+    TestSponza() : SimpleApp() {}
+    virtual ~TestSponza() {}
+};
+
+/*
+DEPRECATED PARTS
+
+class NanoModelLoaded : public MR::EventHandle<MR::Resource*> {
         public:
             class NanoSpriteModelLoaded : public MR::EventHandle<MR::Resource*> {
             public:
@@ -80,77 +160,6 @@ public:
         MR::Model* nano_model = MR::ModelManager::Instance()->NeedModel("Data/Nanosuit.momodel");
         nano_model->OnLoad.RegisterHandle(new NanoModelLoaded(nano_model));
 
-        ///TIMER
-        loading_timer.Stop();
-        std::cout << "\n\nLoading time: " << loading_timer.TimerTime().count() << std::endl;
-
-        /*MR::Entity* nano_entity = scene.CreateEntity(nano_model);
-        nano_entity->GetTransformP()->SetScale( new glm::vec3(0.1f, 0.1f, 0.1f) );*/
-
-        light_point = MR::LightSource::CreatePointLight(glm::vec3(3.0f,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, 3.0f, 10.0f);
-
-        //scene.AddLight( light_point );
-        /*scene.AddLight(
-            MR::LightSource::CreateDirLight(glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f)), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 0.0f))
-        );*/
-
-        scene.SetFog(0.5f, 0.9f, glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
-
-        glClearColor(0.8f, 0.82f, 0.83f, 1.0f);
-
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
-
-        return true;
-    }
-
-    void Input(const float& delta){
-        window->GetMousePos(&mouseX, &mouseY);
-
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_SPACE)) camera_moving_speed = 15.0f;
-        else camera_moving_speed = 1.0f;
-
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_W)) camera->MoveForward( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_S)) camera->MoveForward( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_A)) camera->MoveLeft( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_D)) camera->MoveLeft( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_V)) camera->Move( delta*glm::vec3(0.0f,camera_moving_speed,0.0f) );
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_C)) camera->Move( -delta*glm::vec3(0.0f,camera_moving_speed,0.0f) );
-
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_LEFT)) light_point->GetPosP()->x += delta*1.0f; //camera->MoveForward( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_RIGHT)) light_point->GetPosP()->x -= delta*1.0f; //camera->MoveForward( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_UP)) light_point->GetPosP()->z += delta*1.0f; //camera->MoveLeft( delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
-        if(glfwGetKey(window->GetHandle(), GLFW_KEY_DOWN)) light_point->GetPosP()->z -= delta*1.0f; //camera->MoveLeft( -delta*glm::vec3(camera_moving_speed,camera_moving_speed,camera_moving_speed) );
-
-        if(glfwGetMouseButton(window->GetHandle(), GLFW_MOUSE_BUTTON_RIGHT)) {
-            window->SetMousePos(SCREEN_CENTER_X, SCREEN_CENTER_Y);
-
-            camera->Roll(((float)(SCREEN_CENTER_X - mouseX))*delta*MOUSE_SPEED);
-            camera->Yaw(((float)(SCREEN_CENTER_Y - mouseY))*delta*MOUSE_SPEED);
-        }
-    }
-
-    inline void DrawScene(){
-        scene.Draw(sys);
-    }
-
-    void Frame(const float& delta) {
-        Input(delta);
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        DrawScene();
-
-        if(window->IsIconified()) {
-            Sleep(1000);
-        }
-        else if(!window->IsFocused()) {
-            Sleep(500);
-        }
-    }
-
-    void Free() {  }
-
-    TestSponza() : SimpleApp() {}
-    virtual ~TestSponza() {}
-};
-
+        MR::Entity* nano_entity = scene.CreateEntity(nano_model);
+        nano_entity->GetTransformP()->SetScale( new glm::vec3(0.1f, 0.1f, 0.1f) );
+**/

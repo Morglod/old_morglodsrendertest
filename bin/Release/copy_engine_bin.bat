@@ -1,0 +1,1 @@
+copy "C:\Games\Target\MorglodsRender\BUILD\MorglodsRender.dll" "MorglodsRender.dll"

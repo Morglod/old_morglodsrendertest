@@ -1,103 +1,84 @@
 class TestTriangle : public MR::SimpleApp {
 public:
-    MR::IGeometryBuffer* geom;
-    MR::Shader* shader;
-
-    const char * VertexShaderCode =
-    "#version 330\n"
-    "#extension GL_ARB_separate_shader_objects : enable\n"
-    "layout(location = 0) in vec3 pos;\n"
-    "layout(location = 1) in vec3 color;\n"
-    "layout(location = 1) out vec3 colorOut;\n"
-    "void main(){\n"
-    "gl_Position = vec4(pos, 1);\n"
-    "colorOut = color;\n"
-    "}\n";
-
-    const char * FragmentShaderCode =
-    "#version 330\n"
-    "#extension GL_ARB_separate_shader_objects : enable\n"
-    "layout(location = 1) in vec3 color;\n"
-    "void main(){\n"
-    "gl_FragColor = vec4(color, 1);\n"
-    "}\n";
+    MR::IGeometry* geom;
+    MR::IShaderProgram* prog;
+    MR::Material* mat;
+    MR::IMesh* mesh;
 
     bool Setup() {
-        MR::Log::LogString( std::string("Machine info:") +
-            std::string("\nVersion: ") + MR::MachineInfo::gl_version_string() +
-            std::string("\nGLSL: ") + MR::MachineInfo::gl_version_glsl() +
-            std::string("\nOpenGL: ") + std::to_string(MR::MachineInfo::gl_version_major()) + std::string(" ") + std::to_string(MR::MachineInfo::gl_version_minor()) +
-            std::string("\nGPU: ") + MR::MachineInfo::gpu_name() + std::string(" from ") + MR::MachineInfo::gpu_vendor_string() +
-            std::string("\nMem Total(kb): ") + std::to_string(MR::MachineInfo::total_memory_kb()) + std::string(" Current(kb): ") + std::to_string(MR::MachineInfo::current_memory_kb()) + "\n\n", MR_LOG_LEVEL_INFO);
+        MR::MachineInfo::PrintInfo();
 
-        MR::SubShader* vsub = new MR::SubShader(std::string(VertexShaderCode), MR::ISubShader::Type::Vertex);
-        MR::SubShader* fsub = new MR::SubShader(std::string(FragmentShaderCode), MR::ISubShader::Type::Fragment);
+        mat = new MR::Material();
+        geom = MR::Geometry::MakeBox(glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0,0,0.0f));
+        mesh = new MR::Mesh(MR::StaticArray<MR::IGeometry*>(&geom, 1), mat);
 
-        shader = dynamic_cast<MR::Shader*>(MR::ShaderManager::Instance()->Create("Auto", "FromSubs"));
-        shader->AttachSubShader(vsub);
-        shader->AttachSubShader(fsub);
-        shader->Link();
+        MR::ShaderBuilder::Params reqParams;
+        reqParams.features.light = false;
+        reqParams.customFragmentFuncName = "CustomFragment";
+        reqParams.customFragmentCode =
+        "vec4 CustomFragment(in vec4 a) {"
+        "   vec3 vpos = GetLocalPos().xyz;"
+        "   return vec4(normalize(vec3(floor(vpos.x*10.0f), floor(vpos.y*10.0f), floor(vpos.z*10.0f))), 1.0f);"
+        "}";
 
-        float triData[18] {
-            -1, -1, 0, //pos
-            1, 0, 0, //color
-            0, 1, 0,
-            0, 1, 0,
-            1, -1, 0,
-            0, 0, 1
-        };
+        prog = MR::ShaderBuilder::Need(reqParams);
+        prog->CreateUniform(MR_SHADER_MVP_MAT4, MR::IShaderUniform::SUT_Mat4, camera->GetMVPPtr());
 
-        unsigned int triIData[3] {
-            0, 1, 2
-        };
+        MR::IMaterialPass* matPass = mat->CreatePass(MR::MaterialFlag::Default());
+        matPass->SetShaderProgram(prog);
 
-        MR::VertexBuffer* vbuffer = new MR::VertexBuffer();
-        vbuffer->Buffer(&triData[0], sizeof(float)*18, MR::IGLBuffer::Static+MR::IGLBuffer::Draw, MR::IGLBuffer::ReadOnly);
-        vbuffer->SetNum(3);
-
-        MR::IVertexFormat* vformat = new MR::VertexFormatCustom();
-        vformat->AddVertexAttribute(new MR::VertexAttributeCustom(3, MR::VertexDataTypeFloat::Instance(), 0));
-        vformat->AddVertexAttribute(new MR::VertexAttributeCustom(3, MR::VertexDataTypeFloat::Instance(), 1));
-
-        /*MR::IndexBuffer* ibuffer = new MR::IndexBuffer();
-        ibuffer->Buffer(&triIData[0], sizeof(unsigned int)*3, MR::IGLBuffer::Static+MR::IGLBuffer::Draw, MR::IGLBuffer::ReadOnly);
-        ibuffer->SetNum(3);
-
-        MR::IIndexFormat* iformat = new MR::IndexFormatCustom(MR::VertexDataTypeUInt::Instance());*/
-
-        geom = new MR::GeometryBuffer(vbuffer, nullptr, vformat, nullptr, MR::IGeometryBuffer::Draw_Triangles);
+        camera->SetPosition(glm::vec3(-0.5f, -0.5f, -0.5f));
+        camera->SetRotation(glm::vec3(45.0f, 30.0f, 0.0f));
 
         glClearColor(0.2f, 0.2, 0.2, 1.0f);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_CULL_FACE);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc (GL_LESS);
 
         return true;
     }
 
-    void Input(const float& delta){
-    }
-
-    void DrawScene(){
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        shader->Use(&context);
-        geom->Draw(&context);
-    }
-
     void Frame(const float& delta) {
-        Input(delta);
-        DrawScene();
+        //Camera moves
+        const float move_speed = 1.0f;
+        const float mouse_speed = 70.0f;
+        static double mouse_x = 0.0, mouse_y = 0.0;
+        glfwGetCursorPos(context.GetMainWindow(), &mouse_x, &mouse_y);
 
-        if(window->IsIconified()) {
-            Sleep(1000);
+        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_W)) {
+            camera->MoveForward(move_speed*delta);
         }
-        else if(!window->IsFocused()) {
-            Sleep(500);
+        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_S))  {
+            camera->MoveForward(-move_speed*delta);
         }
+        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_A))  {
+            camera->MoveLeft(move_speed*delta);
+        }
+        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_D))  {
+            camera->MoveLeft(-move_speed*delta);
+        }
+        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_SPACE)) {
+            camera->MoveUp(move_speed*delta);
+        }
+        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_C)) {
+            camera->MoveUp(-move_speed*delta);
+        }
+        if(glfwGetMouseButton(context.GetMainWindow(), GLFW_MOUSE_BUTTON_RIGHT)) {
+            glfwSetCursorPos(context.GetMainWindow(), (double)SCREEN_CENTER_X, (double)SCREEN_CENTER_Y);
+
+            camera->Roll((SCREEN_CENTER_X - (int)mouse_x) * delta * mouse_speed);
+            camera->Yaw((SCREEN_CENTER_Y - (int)mouse_y) * delta * mouse_speed);
+        }
+
+        //Draw
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        mesh->Draw();
     }
 
     void Free() {
         delete geom;
-        delete shader;
+        delete mat;
+        delete mesh;
+        delete prog;
     }
 
     TestTriangle() : MR::SimpleApp() {}
