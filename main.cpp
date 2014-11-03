@@ -19,8 +19,10 @@ int SCREEN_CENTER_Y = 300;
 //#include "TestSponza.hpp"
 //#include "TestOneBufferGeometry.hpp"
 #include "TestTriangle.hpp"
+#include "Tests.hpp"
 
 int main() {
+
     //Render settings
     MR::WindowHints hints;
 
@@ -47,6 +49,9 @@ int main() {
         else std::cout << "failed saving." << std::endl;
     }
 
+    //Test dynamic array
+    //TestDynamicArrays();
+
     //App
     //TestSponza app;
     TestTriangle app;
@@ -54,3 +59,4 @@ int main() {
 
     return 0;
 }
+

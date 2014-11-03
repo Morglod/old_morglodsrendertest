@@ -1,87 +1,119 @@
+
+#include <Buffers/Buffers.hpp>
+#include <Utils/Serialization.hpp>
+#include <Geometry/GeometryBuilder.hpp>
+#include <Geometry/GeometryObject.hpp>
+#include <Geometry/GeometryManager.hpp>
+
+#include <Textures/TextureObjects.hpp>
+#include <Textures/TextureSettings.hpp>
+
+#include <Utils/Pointers.hpp>
+
+#include <Geometry/GeometryLoader.hpp>
+
 class TestTriangle : public MR::SimpleApp {
 public:
     MR::IGeometry* geom;
+    /*MR::GPUObjectHandlePtr<MR::IShaderProgram> prog;
+    MR::GPUObjectHandlePtr<MR::ITexture> tex;*/
     MR::IShaderProgram* prog;
-    MR::Material* mat;
-    MR::IMesh* mesh;
+    MR::ITexture* tex;
 
     bool Setup() {
         MR::MachineInfo::PrintInfo();
 
-        mat = new MR::Material();
-        geom = MR::Geometry::MakeBox(glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0,0,0.0f));
-        mesh = new MR::Mesh(MR::StaticArray<MR::IGeometry*>(&geom, 1), mat);
+        ///TEST
+        MR::GeometryLoader geom_loader;
+        geom_loader.Import("pyr_test.obj");
+        geom = geom_loader.GetGeometry().At(0);
+        ///
 
-        MR::ShaderBuilder::Params reqParams;
-        reqParams.features.light = false;
-        reqParams.customFragmentFuncName = "CustomFragment";
-        reqParams.customFragmentCode =
-        "vec4 CustomFragment(in vec4 a) {"
-        "   vec3 vpos = GetLocalPos().xyz;"
-        "   return vec4(normalize(vec3(floor(vpos.x*10.0f), floor(vpos.y*10.0f), floor(vpos.z*10.0f))), 1.0f);"
-        "}";
+        prog = MR::ShaderProgram::DefaultWithTexture();
 
-        prog = MR::ShaderBuilder::Need(reqParams);
-        prog->CreateUniform(MR_SHADER_MVP_MAT4, MR::IShaderUniform::SUT_Mat4, camera->GetMVPPtr());
+        if(prog == nullptr) return false;
 
-        MR::IMaterialPass* matPass = mat->CreatePass(MR::MaterialFlag::Default());
-        matPass->SetShaderProgram(prog);
+        prog->CreateUniform(MR_SHADER_MVP_MAT4, MR::IShaderUniform::Mat4, camera->GetMVPPtr());
+        prog->CreateUniform("MainTex", MR::IShaderUniform::Sampler2D, new int(0));
 
-        camera->SetPosition(glm::vec3(-0.5f, -0.5f, -0.5f));
-        camera->SetRotation(glm::vec3(45.0f, 30.0f, 0.0f));
+        /*MR::IMaterialPass* matPass = mat->CreatePass(MR::MaterialFlag::Default());
+        matPass->SetShaderProgram(prog);*/
+
+        camera->SetPosition(glm::vec3(0.25f, 0.75f, -0.7f));
+        camera->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
+        camera->SetFarZ(10000.0f);
+
+        //Make texture
+        tex = MR::Texture::FromFile("grid_test_tex.png");
+
+        MR::ITextureSettings* texSettings = new MR::TextureSettings();
+        texSettings->Create();
+        tex->SetSettings(texSettings);
+        tex->Bind(0);
 
         glClearColor(0.2f, 0.2, 0.2, 1.0f);
         glEnable(GL_DEPTH_TEST);
-        glDepthFunc (GL_LESS);
+        glEnable(GL_CULL_FACE);
+        glDepthFunc(GL_LESS);
+
+        window = context.GetMainWindow();
 
         return true;
     }
 
+    GLFWwindow* window;
+    double mouse_x = 0.0, mouse_y = 0.0;
     void Frame(const float& delta) {
         //Camera moves
-        const float move_speed = 1.0f;
+        const float move_speed = 8.0f;
         const float mouse_speed = 70.0f;
-        static double mouse_x = 0.0, mouse_y = 0.0;
-        glfwGetCursorPos(context.GetMainWindow(), &mouse_x, &mouse_y);
 
-        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_W)) {
-            camera->MoveForward(move_speed*delta);
-        }
-        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_S))  {
-            camera->MoveForward(-move_speed*delta);
-        }
-        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_A))  {
-            camera->MoveLeft(move_speed*delta);
-        }
-        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_D))  {
-            camera->MoveLeft(-move_speed*delta);
-        }
-        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_SPACE)) {
-            camera->MoveUp(move_speed*delta);
-        }
-        if(glfwGetKey(context.GetMainWindow(), GLFW_KEY_C)) {
-            camera->MoveUp(-move_speed*delta);
-        }
-        if(glfwGetMouseButton(context.GetMainWindow(), GLFW_MOUSE_BUTTON_RIGHT)) {
-            glfwSetCursorPos(context.GetMainWindow(), (double)SCREEN_CENTER_X, (double)SCREEN_CENTER_Y);
+        glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
-            camera->Roll((SCREEN_CENTER_X - (int)mouse_x) * delta * mouse_speed);
-            camera->Yaw((SCREEN_CENTER_Y - (int)mouse_y) * delta * mouse_speed);
+        if(glfwGetKey(window, GLFW_KEY_W)) {
+            camera->MoveForward(move_speed * delta);
+        }
+        if(glfwGetKey(window, GLFW_KEY_S))  {
+            camera->MoveForward(-move_speed * delta);
+        }
+        if(glfwGetKey(window, GLFW_KEY_A))  {
+            camera->MoveLeft(move_speed * delta);
+        }
+        if(glfwGetKey(window, GLFW_KEY_D))  {
+            camera->MoveLeft(-move_speed * delta);
+        }
+        if(glfwGetKey(window, GLFW_KEY_SPACE)) {
+            camera->MoveUp(move_speed * delta);
+        }
+        if(glfwGetKey(window, GLFW_KEY_C)) {
+            camera->MoveUp(-move_speed * delta);
+        }
+        if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) {
+            glfwSetCursorPos(window, (double)SCREEN_CENTER_X, (double)SCREEN_CENTER_Y);
+
+            camera->Roll((SCREEN_CENTER_X - (int)mouse_x) * mouse_speed * delta);
+            camera->Yaw((SCREEN_CENTER_Y - (int)mouse_y) * mouse_speed * delta);
         }
 
         //Draw
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        mesh->Draw();
+        prog->Use();
+        geom->Draw();
     }
 
     void Free() {
-        delete geom;
-        delete mat;
+        /*delete geom[0];
+        delete geom[1];
+        delete geom[2];
+        delete geom[3];
+        delete geom[4];
+        //delete mat;
         delete mesh;
-        delete prog;
+        prog->Destroy();
+        delete prog;*/
     }
 
     TestTriangle() : MR::SimpleApp() {}
-    virtual ~TestTriangle() {}
+    virtual ~TestTriangle() {  }
 };
 
