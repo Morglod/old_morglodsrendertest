@@ -1,11 +1,11 @@
 #include <Utils/Containers.hpp>
-#include <Utils/Time.hpp>
+#include "mu/Time.hpp"
 #include <iostream>
 
 void TestDynamicArrays() {
     const size_t elements_in_test_num = 104857600;
 
-    typedef MR::Timer<MR::Time::HighResolutionClock, MR::Time::Microseconds> TimerT;
+    typedef mu::Timer<mu::TimeDef::HighResolutionClock, mu::TimeDef::Microseconds> TimerT;
 
     std::cout << "std::vector<char>\n";
     {

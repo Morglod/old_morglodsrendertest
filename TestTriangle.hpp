@@ -63,6 +63,8 @@ public:
 
     GLFWwindow* window;
     double mouse_x = 0.0, mouse_y = 0.0;
+    unsigned short _frames_this_second = 0;
+    double _current_time = 0.0;
     void Frame(const float& delta) {
         //Camera moves
         const float move_speed = 8.0f;
@@ -99,6 +101,14 @@ public:
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         prog->Use();
         geom->Draw();
+
+        _current_time += delta;
+        ++_frames_this_second;
+        if(_current_time >= 1.0) {
+            printf(("\r"+std::to_string(_frames_this_second)).c_str());
+            _current_time = 0.0;
+            _frames_this_second = 0;
+        }
     }
 
     void Free() {

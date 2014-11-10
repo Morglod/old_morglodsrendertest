@@ -1,5 +1,5 @@
 #include <MorglodsRender.hpp>
-#include <Utils/Threads.hpp>
+#include "mu/Thread.hpp"
 #include <Types.hpp>
 #include <Utils/FilesIO.hpp>
 #include <Materials/Material.hpp>
@@ -28,7 +28,7 @@ int main() {
 
     //Config
     std::cout << "Loading config from \"settings.cfg\"... ";
-    MR::Config config;
+    mu::Config config;
     if(config.ParseFile("settings.cfg")) {
         config.GetTo("window.width", WINDOW_WIDTH);
         config.GetTo("window.height", WINDOW_HEIGHT);

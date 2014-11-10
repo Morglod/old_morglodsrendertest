@@ -54,8 +54,10 @@
 			<Add option="-fexceptions" />
 			<Add directory="../MorglodsRender" />
 			<Add directory="C:/Libs/AntTweakBar_MinGW_GLOnly/include" />
+			<Add directory="C:/Libs/Projects/MorglodsUtils/include" />
 		</Compiler>
 		<Linker>
+			<Add library="C:\Libs\Projects\MorglodsUtils\bin\Release\libMorglodsUtils.a" />
 			<Add directory="../MorglodsRender" />
 			<Add directory="C:/Libs/AntTweakBar_MinGW_GLOnly/lib" />
 		</Linker>

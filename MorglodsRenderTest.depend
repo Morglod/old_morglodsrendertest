@@ -288,7 +288,7 @@
 	<bitset>
 	<glm/glm.hpp>
 
-1412065091 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\simpleapp.hpp
+1415481357 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\simpleapp.hpp
 	"Context.hpp"
 	"Utils/Exception.hpp"
 	"Utils/ConfigClass.hpp"
@@ -325,7 +325,7 @@
 
 1396841671 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testlods.hpp
 
-1414857248 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testtriangle.hpp
+1415629118 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testtriangle.hpp
 	<Buffers/Buffers.hpp>
 	<Utils/Serialization.hpp>
 	<Geometry/GeometryBuilder.hpp>
@@ -710,9 +710,9 @@
 	"../Utils/Singleton.hpp"
 	<string>
 
-1412010736 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\context.hpp
+1415481468 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\context.hpp
 
-1405696149 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\query.hpp
+1415144829 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\query.hpp
 
 1407846257 source:c:\games\target\morglodsrendertest\main.cpp
 	<MorglodsRender.hpp>
@@ -1043,8 +1043,9 @@
 1408133141 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\memory.hpp
 	<stddef.h>
 
-1413293765 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\materialinterfaces.hpp
+1415481270 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\materialinterfaces.hpp
 	"../Utils/Containers.hpp"
+	<string>
 	<glm/glm.hpp>
 
 1414010383 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\meshinterfaces.hpp
@@ -1072,7 +1073,7 @@
 1406812666 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\instancedgeometry.hpp
 	"GeometryInterfaces.hpp"
 
-1413293870 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\material.hpp
+1415481313 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\material.hpp
 	"MaterialInterfaces.hpp"
 
 1406376519 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\shadereditor.cpp
