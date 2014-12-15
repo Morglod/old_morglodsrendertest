@@ -1,29 +1,29 @@
-MR::GeometryBuffer* createScreenQuad(){
-    return MR::GeometryBuffer::Plane(glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0,0,0), MR::IGLBuffer::Static+MR::IGLBuffer::Draw, MR::IGeometryBuffer::Draw_Quads);
+mr::GeometryBuffer* createScreenQuad(){
+    return mr::GeometryBuffer::Plane(glm::vec3(2.0f, 2.0f, 0.0f), glm::vec3(0,0,0), mr::IGLBuffer::Static+mr::IGLBuffer::Draw, mr::IGeometryBuffer::Draw_Quads);
 }
 
-class TestLods : public MR::SimpleApp {
+class TestLods : public mr::SimpleApp {
 public:
     float camera_moving_speed = 1.0f;
 
-    MR::Shader* shader_default;
-    MR::Shader* shader_render_to_texture;
-    MR::Shader* shader_render_to_texture_discard;
-    MR::Shader* shader_default_screen;
+    mr::Shader* shader_default;
+    mr::Shader* shader_render_to_texture;
+    mr::Shader* shader_render_to_texture_discard;
+    mr::Shader* shader_default_screen;
 
-    MR::RenderTarget* rtarget;
+    mr::RenderTarget* rtarget;
 
-    MR::CubeMap* env_cubemap;
+    mr::CubeMap* env_cubemap;
 
-    MR::UIElement* ui_test_box;
+    mr::UIElement* ui_test_box;
 
     double mouseX = 0.0, mouseY = 0.0;
     const float MOUSE_SPEED = 70.0f;
 
-    MR::GeometryBuffer* screen_quad;
+    mr::GeometryBuffer* screen_quad;
 
-    MR::Shader* MakeShader(MR::SubShader* s1, MR::SubShader* s2){
-        MR::Shader* shader = dynamic_cast<MR::Shader*>(MR::ShaderManager::Instance()->Create("Auto", "FromSubs"));
+    mr::Shader* MakeShader(mr::SubShader* s1, mr::SubShader* s2){
+        mr::Shader* shader = dynamic_cast<mr::Shader*>(mr::ShaderManager::Instance()->Create("Auto", "FromSubs"));
         shader->AttachSubShader(s1);
         shader->AttachSubShader(s2);
         shader->Link();
@@ -32,20 +32,20 @@ public:
 
     bool Setup() {
         //Write user's machine info
-        MR::Log::LogString( std::string("Machine info:") +
-            std::string("\nVersion: ") + MR::MachineInfo::gl_version_string() +
-            std::string("\nGLSL: ") + MR::MachineInfo::gl_version_glsl() +
-            std::string("\nOpenGL: ") + std::to_string(MR::MachineInfo::gl_version_major()) + std::string(" ") + std::to_string(MR::MachineInfo::gl_version_minor()) +
-            std::string("\nGPU: ") + MR::MachineInfo::gpu_name() + std::string(" from ") + MR::MachineInfo::gpu_vendor_string() +
-            std::string("\nMem Total(kb): ") + std::to_string(MR::MachineInfo::total_memory_kb()) + std::string(" Current(kb): ") + std::to_string(MR::MachineInfo::current_memory_kb()) + "\n\n", MR_LOG_LEVEL_INFO);
+        mr::Log::LogString( std::string("Machine info:") +
+            std::string("\nVersion: ") + mr::MachineInfo::gl_version_string() +
+            std::string("\nGLSL: ") + mr::MachineInfo::gl_version_glsl() +
+            std::string("\nOpenGL: ") + std::to_string(mr::MachineInfo::gl_version_major()) + std::string(" ") + std::to_string(mr::MachineInfo::gl_version_minor()) +
+            std::string("\nGPU: ") + mr::MachineInfo::gpu_name() + std::string(" from ") + mr::MachineInfo::gpu_vendor_string() +
+            std::string("\nMem Total(kb): ") + std::to_string(mr::MachineInfo::total_memory_kb()) + std::string(" Current(kb): ") + std::to_string(mr::MachineInfo::current_memory_kb()) + "\n\n", MR_LOG_LEVEL_INFO);
 
-        MR::Log::LogString("\nVBUM: " + std::to_string(MR::MachineInfo::FeatureNV_GPUPTR()));
-        MR::Log::LogString("\nDirect: " + std::to_string(MR::MachineInfo::IsDirectStateAccessSupported()));
+        mr::Log::LogString("\nVBUM: " + std::to_string(mr::MachineInfo::FeatureNV_GPUPTR()));
+        mr::Log::LogString("\nDirect: " + std::to_string(mr::MachineInfo::IsDirectStateAccessSupported()));
 
-        shader_default = MakeShader(MR::SubShader::DefaultFrag(), MR::SubShader::DefaultVert());
-        shader_render_to_texture = MakeShader(MR::SubShader::DefaultRTTFrag(), MR::SubShader::DefaultRTTVert());
-        shader_render_to_texture_discard = MakeShader(MR::SubShader::DefaultRTTDiscardFrag(), MR::SubShader::DefaultRTTDiscardVert());
-        shader_default_screen = MakeShader(MR::SubShader::DefaultScreenFrag(), MR::SubShader::DefaultScreenVert());
+        shader_default = MakeShader(mr::SubShader::DefaultFrag(), mr::SubShader::DefaultVert());
+        shader_render_to_texture = MakeShader(mr::SubShader::DefaultRTTFrag(), mr::SubShader::DefaultRTTVert());
+        shader_render_to_texture_discard = MakeShader(mr::SubShader::DefaultRTTDiscardFrag(), mr::SubShader::DefaultRTTDiscardVert());
+        shader_default_screen = MakeShader(mr::SubShader::DefaultScreenFrag(), mr::SubShader::DefaultScreenVert());
 
         shader_default->CreateUniform(MR_MATERIAL_ALBEDO_TEX, new int(0));
         CameraUniforms(shader_default, "projMatrix", "viewMatrix", "mvp", "", "");
@@ -65,33 +65,33 @@ public:
 
         shader_default_screen->CreateUniform(MR_MATERIAL_ALBEDO_TEX, new int(1));
 
-        rtarget = new MR::RenderTarget("TestTarget", 1, WINDOW_WIDTH, WINDOW_HEIGHT);
-        rtarget->CreateTargetTexture(0, MR::Texture::InternalFormat::RGB, MR::Texture::Format::RGB, MR::Texture::Type::UNSIGNED_BYTE);
+        rtarget = new mr::RenderTarget("TestTarget", 1, WINDOW_WIDTH, WINDOW_HEIGHT);
+        rtarget->CreateTargetTexture(0, mr::Texture::InternalFormat::RGB, mr::Texture::Format::RGB, mr::Texture::Type::UNSIGNED_BYTE);
 
         //env_cubemap = new MR::CubeMap(MR::TextureManager::Instance(), "EnvCubemap", "FromMem", 512, 512);
 
-        MR::Model* nano_model = MR::ModelManager::Instance()->NeedModel("Data/Nanosuit.momodel");
+        mr::Model* nano_model = mr::ModelManager::Instance()->NeedModel("Data/Nanosuit.momodel");
         for(unsigned int matN = 0; matN < nano_model->GetLodN(0)->GetMesh(0)->GetMaterialsNum(); ++matN){
             nano_model->GetLodN(0)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->SetShader(shader_render_to_texture);
         }
 
-        nano_model->AddLod( MR::ModelManager::Instance()->NeedModel("Data/nanosuit_sprite.momodel")->GetLodN(0) );
+        nano_model->AddLod( mr::ModelManager::Instance()->NeedModel("Data/nanosuit_sprite.momodel")->GetLodN(0) );
         for(unsigned int matN = 0; matN < nano_model->GetLodN(1)->GetMesh(0)->GetMaterialsNum(); ++matN){
             nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->SetShader(shader_render_to_texture_discard);
-            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapR(MR::TextureSettings::Wrap::CLAMP);
-            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapS(MR::TextureSettings::Wrap::CLAMP);
-            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapT(MR::TextureSettings::Wrap::CLAMP);
+            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapR(mr::TextureSettings::Wrap::CLAMP);
+            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapS(mr::TextureSettings::Wrap::CLAMP);
+            nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->GetAlbedoTexture()->GetSettings()->SetWrapT(mr::TextureSettings::Wrap::CLAMP);
             nano_model->GetLodN(1)->GetMesh(0)->GetMaterials()[matN]->GetPass(0)->SetTwoSided(true);
         }
         nano_model->SetDistStep(8.0f);
 
-        MR::Entity* nano_entity = scene.CreateEntity(nano_model);
+        mr::Entity* nano_entity = scene.CreateEntity(nano_model);
         nano_entity->GetTransformP()->SetScale( new glm::vec3(0.1f, 0.1f, 0.1f) );
 
         const int inst_num = 10;
         for(int i = 1; i < inst_num; ++i){
             for(int j = 0; j < inst_num; ++j){
-                MR::Entity* ent = nano_entity->Copy();
+                mr::Entity* ent = nano_entity->Copy();
                 ent->GetTransformP()->SetPos( new glm::vec3( i, -0.8f, -j) );
                 scene.AddEntity(ent);
             }
@@ -99,10 +99,10 @@ public:
 
         screen_quad = createScreenQuad();
 
-        MR::UIManager::Instance()->SetScreenRect(glm::vec2((float)WINDOW_WIDTH, (float)WINDOW_HEIGHT));
-        ui_test_box = new MR::UIElement(MR::UIManager::Instance(), MR::Rect(10.0f, 10.0f, 100.0f, 200.0f));
+        mr::UIManager::Instance()->SetScreenRect(glm::vec2((float)WINDOW_WIDTH, (float)WINDOW_HEIGHT));
+        ui_test_box = new mr::UIElement(mr::UIManager::Instance(), mr::Rect(10.0f, 10.0f, 100.0f, 200.0f));
         ui_test_box->SetColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
-        MR::UIManager::Instance()->Add(ui_test_box);
+        mr::UIManager::Instance()->Add(ui_test_box);
 
         glClearColor(0.8f, 0.82f, 0.83f, 1.0f);
 
@@ -131,7 +131,7 @@ public:
     }
 
     void DrawToCubeMap(){
-        context.BindTexture(MR::Texture::Target::CubeMap, env_cubemap->GetGLTexture(), 1);
+        context.BindTexture(mr::Texture::Target::CubeMap, env_cubemap->GetGLTexture(), 1);
         env_cubemap->GetRenderTarget()->Bind(context);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -143,10 +143,10 @@ public:
 
     void DrawToRenderTarget(){
         //Bind RenderTarget ColorBuffer as TextureUnit 1
-        context.BindTexture(MR::Texture::Target::Base2D, rtarget->GetTargetTexture(0), 1);
+        context.BindTexture(mr::Texture::Target::Base2D, rtarget->GetTargetTexture(0), 1);
 
         //Bind RenderTarget DepthBuffer as TextureUnit 2
-        context.BindTexture(MR::Texture::Target::Base2D, rtarget->GetTargetTexture(1), 2);
+        context.BindTexture(mr::Texture::Target::Base2D, rtarget->GetTargetTexture(1), 2);
 
         //Bind RenderTarget and clear it
         rtarget->Bind(context);
@@ -167,7 +167,7 @@ public:
         context.UseShader(shader_default_screen);
         context.DrawGeometryBuffer(screen_quad);
 
-        MR::UIManager::Instance()->Draw(&context, delta);
+        mr::UIManager::Instance()->Draw(&context, delta);
         glEnable(GL_CULL_FACE);
     }
 

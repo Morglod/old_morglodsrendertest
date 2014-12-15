@@ -1,28 +1,28 @@
-class TestSponza : public MR::SimpleApp {
+class TestSponza : public mr::SimpleApp {
 public:
     float camera_moving_speed = 1.0f;
 
     double mouseX = 0.0, mouseY = 0.0;
     const float MOUSE_SPEED = 70.0f;
 
-    MR::ILightSource* light_point = 0;
+    mr::ILightSource* light_point = 0;
 
-    MR::Query qTimeElapsed = MR::Query(MR::Query::Target::TimeElapsed);
+    mr::Query qTimeElapsed = mr::Query(mr::Query::Target::TimeElapsed);
 
     bool Setup() {
         //Write user's machine info
-        MR::MachineInfo::PrintInfo();
+        mr::MachineInfo::PrintInfo();
 
-        MR::TextureManager::GetInstance()->SetCompressionMode(MR::ITexture::CompressionMode::ETC2);
+        mr::TextureManager::GetInstance()->SetCompressionMode(mr::ITexture::CompressionMode::ETC2);
 
         ///TIMER
         qTimeElapsed.Begin();
-        MR::Timer<MR::Time::HighResolutionClock, MR::Time::Milliseconds> loading_timer;
+        mr::Timer<mr::Time::HighResolutionClock, mr::Time::Milliseconds> loading_timer;
         loading_timer.Start();
 
-        MR::Model* sponza_model = MR::ModelManager::GetInstance()->NeedModel("Data/Sponza.momodel");
+        mr::Model* sponza_model = mr::ModelManager::GetInstance()->NeedModel("Data/Sponza.momodel");
 
-        MR::Entity* sponza_entity = scene.CreateEntity(sponza_model);
+        mr::Entity* sponza_entity = scene.CreateEntity(sponza_model);
         sponza_entity->GetTransformPtr()->SetScale( new glm::vec3(0.005f, 0.005f, 0.005f) );
 
         /*for(int i = 0; i < 5; ++i){
@@ -38,13 +38,13 @@ public:
 
         uint64_t gpu_time = 0;
         bool gpu_timer = qTimeElapsed.GetResult(&gpu_time);
-        MR::Log::LogString("\rTime elapsed: " + std::to_string(gpu_time));
+        mr::Log::LogString("\rTime elapsed: " + std::to_string(gpu_time));
 
-        light_point = MR::LightSource::CreatePointLight(glm::vec3(-3.0f,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, 3.0f, 10.0f);
+        light_point = mr::LightSource::CreatePointLight(glm::vec3(-3.0f,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(0.0f, 0.0f, 0.0f), 1.0f, 3.0f, 10.0f);
         scene.AddLight( light_point );
 
         for(size_t il = 0; il < 3; ++il) {
-            scene.AddLight( MR::LightSource::CreatePointLight(glm::vec3(0.0f + 3.0f * (float)il,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(0.0f, 0.0f, 0.0f), 10.0f / (il+0.1f), (float)il +0.001f, 10.0f) );
+            scene.AddLight( mr::LightSource::CreatePointLight(glm::vec3(0.0f + 3.0f * (float)il,0.0f,0.0f), glm::vec3(2.1f,2.1f,2.1f), glm::vec3(0.0f, 0.0f, 0.0f), 10.0f / (il+0.1f), (float)il +0.001f, 10.0f) );
         }
 
         /*scene.AddLight(

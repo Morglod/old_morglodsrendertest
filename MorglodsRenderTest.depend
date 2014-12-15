@@ -1,7 +1,7 @@
 # depslib dependency file v1.0
-1414433058 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\main.cpp
+1418654428 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\main.cpp
 	<MorglodsRender.hpp>
-	<Utils/Threads.hpp>
+	"Thread.hpp"
 	<Types.hpp>
 	<Utils/FilesIO.hpp>
 	<Materials/Material.hpp>
@@ -109,9 +109,8 @@
 1387382320 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\transformation.h
 	"MorglodsRender.h"
 
-1412065083 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.hpp
+1415641868 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\morglodsrender.hpp
 	"Config.hpp"
-	"Utils/ConfigClass.hpp"
 	"Scene/PerspectiveCamera.hpp"
 	"Utils/Events.hpp"
 	"Geometry/GeometryBuffer.hpp"
@@ -127,7 +126,6 @@
 	"Textures/TextureInterfaces.hpp"
 	"Resources/ResourceManager.hpp"
 	"Scene/Transformation.hpp"
-	"Utils/Time.hpp"
 	"Query.hpp"
 
 1392755984 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\pre.hpp
@@ -206,7 +204,7 @@
 	<vector>
 	<algorithm>
 
-1415041850 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\machineinfo.hpp
 	"Config.hpp"
 	<string>
 
@@ -269,7 +267,7 @@
 1391457523 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\memory.hpp
 	<stack>
 
-1412079635 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\config.hpp
+1416017874 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\config.hpp
 
 1403703848 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene.hpp
 	"Config.hpp"
@@ -277,7 +275,7 @@
 	"Entity.hpp"
 	"Light.hpp"
 
-1411573661 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\types.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\types.hpp
 	"Utils/Containers.hpp"
 	"Utils/Events.hpp"
 	<vector>
@@ -288,10 +286,10 @@
 	<bitset>
 	<glm/glm.hpp>
 
-1415481357 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\simpleapp.hpp
+1418654438 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\simpleapp.hpp
 	"Context.hpp"
 	"Utils/Exception.hpp"
-	"Utils/ConfigClass.hpp"
+	"ConfigClass.hpp"
 	"Config.hpp"
 	"Core.hpp"
 	"Scene/PerspectiveCamera.hpp"
@@ -325,7 +323,8 @@
 
 1396841671 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testlods.hpp
 
-1415629118 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testtriangle.hpp
+1418658123 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testtriangle.hpp
+	"TimedCounter.hpp"
 	<Buffers/Buffers.hpp>
 	<Utils/Serialization.hpp>
 	<Geometry/GeometryBuilder.hpp>
@@ -334,7 +333,7 @@
 	<Textures/TextureObjects.hpp>
 	<Textures/TextureSettings.hpp>
 	<Utils/Pointers.hpp>
-	<Geometry/GeometryLoader.hpp>
+	<Scene/SceneLoader.hpp>
 
 1405697422 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testsponza.hpp
 
@@ -553,28 +552,28 @@
 
 1405598499 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\pipeline.hpp
 
-1410629964 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\events.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\events.hpp
 	<vector>
 	<algorithm>
 
-1412967756 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderinterfaces.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderinterfaces.hpp
 	"../CoreObjects.hpp"
 
-1414704418 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\containers.hpp
-	"Threads.hpp"
+1418653857 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\containers.hpp
+	"Thread.hpp"
 	<string.h>
 	<chrono>
 	<queue>
 	<stdlib.h>
 	<initializer_list>
 
-1414074332 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\log.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\log.hpp
 	<vector>
 	<algorithm>
 	<string>
 	"Exception.hpp"
 
-1398849540 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\exception.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\exception.hpp
 	<string>
 
 1414073183 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\time.hpp
@@ -588,7 +587,7 @@
 	<glm/glm.hpp>
 	<glm/gtc/matrix_transform.hpp>
 
-1412075133 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\transformation.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\transformation.hpp
 	"../Utils/Events.hpp"
 	<glm/glm.hpp>
 	<glm/gtc/matrix_transform.hpp>
@@ -603,7 +602,7 @@
 	"SceneInterfaces.hpp"
 	<string>
 
-1410622300 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\sceneinterfaces.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\sceneinterfaces.hpp
 	"../Utils/Events.hpp"
 	"../Types.hpp"
 	"Transformation.hpp"
@@ -622,7 +621,7 @@
 	"Entity.hpp"
 	"Light.hpp"
 
-1409672513 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\filesio.hpp
+1418653906 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\filesio.hpp
 	"Containers.hpp"
 	"Singleton.hpp"
 	<string>
@@ -653,10 +652,10 @@
 
 1404925150 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testonebuffergeometry.hpp
 
-1414010386 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\mesh.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\mesh.hpp
 	"MeshInterfaces.hpp"
 
-1414854940 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resources\resourcemanager.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\resources\resourcemanager.hpp
 	<functional>
 
 1410531367 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrybufferv2.hpp
@@ -678,7 +677,7 @@
 	<glm/gtc/matrix_transform.hpp>
 	<vector>
 
-1414872672 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryinterfaces.hpp
+1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryinterfaces.hpp
 	"../Types.hpp"
 	"../Utils/Containers.hpp"
 	"../Shaders/ShaderConfig.hpp"
@@ -688,31 +687,31 @@
 
 1411377996 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\singleton.hpp
 
-1415041984 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureinterfaces.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureinterfaces.hpp
 	"../Utils/Events.hpp"
 	"../Types.hpp"
 	"../CoreObjects.hpp"
 
-1411222133 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\coreobjects.hpp
+1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\coreobjects.hpp
 	"Types.hpp"
 	"stddef.h"
 
-1415031107 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\core.hpp
+1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\core.hpp
 
 1407332489 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureresource.hpp
 	"../Resources/ResourceManager.hpp"
 	"TextureObjects.hpp"
 
-1415040180 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureobjects.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureobjects.hpp
 	"TextureInterfaces.hpp"
 
 1407333123 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureloader.hpp
 	"../Utils/Singleton.hpp"
 	<string>
 
-1415481468 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\context.hpp
+1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\context.hpp
 
-1415144829 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\query.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\query.hpp
 
 1407846257 source:c:\games\target\morglodsrendertest\main.cpp
 	<MorglodsRender.hpp>
@@ -1020,13 +1019,13 @@
 	"MaterialInterfaces.hpp"
 	<vector>
 
-1410622311 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\perspectivecamera.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\perspectivecamera.hpp
 	"SceneInterfaces.hpp"
 
-1412966599 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderconfig.hpp
+1418656303 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderconfig.hpp
 	"../Config.hpp"
 
-1409074499 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\buffers\buffersinterfaces.hpp
+1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\buffers\buffersinterfaces.hpp
 	"BuffersConfig.hpp"
 	"../Utils/Memory.hpp"
 	"../CoreObjects.hpp"
@@ -1036,19 +1035,19 @@
 1408135951 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\buffers\buffersconfig.hpp
 	"../Utils/Debug.hpp"
 
-1408134109 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\debug.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\debug.hpp
 	<iostream>
 	"Log.hpp"
 
-1408133141 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\memory.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\memory.hpp
 	<stddef.h>
 
-1415481270 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\materialinterfaces.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\materialinterfaces.hpp
 	"../Utils/Containers.hpp"
 	<string>
 	<glm/glm.hpp>
 
-1414010383 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\meshinterfaces.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\meshinterfaces.hpp
 	"../Utils/Containers.hpp"
 	"../Utils/Events.hpp"
 
@@ -1059,72 +1058,108 @@
 1407064616 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderbuilder.hpp
 	"ShaderInterfaces.hpp"
 
-1410124048 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shadercompiler.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shadercompiler.hpp
 	"../Utils/Containers.hpp"
 	<string>
 
-1410041763 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderuniforms.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderuniforms.hpp
 	"ShaderInterfaces.hpp"
 	<glm/glm.hpp>
 
-1412967770 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderobjects.hpp
+1418656335 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\shaders\shaderobjects.hpp
 	"ShaderInterfaces.hpp"
 
 1406812666 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\instancedgeometry.hpp
 	"GeometryInterfaces.hpp"
 
-1415481313 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\material.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\materials\material.hpp
 	"MaterialInterfaces.hpp"
 
 1406376519 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\shadereditor.cpp
 	<MachineInfo.hpp>
 	<Geometry/GeometryInterfaces.hpp>
 
-1410629940 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\buffers\virtualbuffer.hpp
+1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\buffers\virtualbuffer.hpp
 	"BuffersInterfaces.hpp"
 
-1409073761 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\buffers\buffers.hpp
+1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\buffers\buffers.hpp
 	"BuffersInterfaces.hpp"
 
-1412390788 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\serialization.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\serialization.hpp
 	"Containers.hpp"
 	<string>
 
-1412186368 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrybuilder.hpp
+1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrybuilder.hpp
 	"../Utils/Containers.hpp"
 	"../Buffers/BuffersInterfaces.hpp"
 	"../Shaders/ShaderConfig.hpp"
 	<vector>
 	<glm/glm.hpp>
 
-1411120375 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\tests.hpp
+1418654905 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\tests.hpp
 	<Utils/Containers.hpp>
-	<Utils/Time.hpp>
+	"Time.hpp"
 	<iostream>
 
-1412060731 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrybuffer.hpp
+1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrybuffer.hpp
 	"../Config.hpp"
 	"GeometryInterfaces.hpp"
 
-1412062110 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryobject.hpp
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryobject.hpp
 	"GeometryInterfaces.hpp"
 
-1411301115 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\texturesettings.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\texturesettings.hpp
 	"TextureInterfaces.hpp"
 
-1412390996 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrymanager.hpp
+1418653902 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometrymanager.hpp
 	"GeometryInterfaces.hpp"
-	"../Utils/Singleton.hpp"
+	"Singleton.hpp"
 	"../Buffers/VirtualBuffer.hpp"
 
 1412536732 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\importer\objimport.hpp
 	<string>
 
-1414703494 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\pointers.hpp
+1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\pointers.hpp
 	"../Context.hpp"
 
 1414185590 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryloader.hpp
 	<string>
 	<memory>
 	"../Utils/Containers.hpp"
+
+1415485436 c:\libs\projects\morglodsutils\include\mu\thread.hpp
+	<memory>
+
+1415641277 c:\libs\projects\morglodsutils\include\mu\singleton.hpp
+
+1415551454 c:\libs\projects\morglodsutils\include\mu\configclass.hpp
+	<string>
+	<sstream>
+	<map>
+
+1415588583 c:\libs\projects\morglodsutils\include\mu\time.hpp
+	<chrono>
+	<string>
+
+1415723739 c:\libs\projects\morglodsutils\include\mu\timedcounter.hpp
+
+1416802604 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\scene\sceneloader.hpp
+	"../Utils/Containers.hpp"
+	<string>
+
+1417617859 c:\libs\projects\morglodsutils\thread.hpp
+	<memory>
+
+1415641277 c:\libs\projects\morglodsutils\singleton.hpp
+
+1415551454 c:\libs\projects\morglodsutils\configclass.hpp
+	<string>
+	<sstream>
+	<map>
+
+1415723739 c:\libs\projects\morglodsutils\timedcounter.hpp
+
+1415588583 c:\libs\projects\morglodsutils\time.hpp
+	<chrono>
+	<string>
 

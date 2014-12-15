@@ -1,4 +1,4 @@
-using namespace MR;
+using namespace mr;
 
 class TestOneBufGeom : public SimpleApp {
 public:

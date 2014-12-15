@@ -1,3 +1,4 @@
+#include "TimedCounter.hpp"
 
 #include <Buffers/Buffers.hpp>
 #include <Utils/Serialization.hpp>
@@ -10,46 +11,53 @@
 
 #include <Utils/Pointers.hpp>
 
-#include <Geometry/GeometryLoader.hpp>
+#include <Scene/SceneLoader.hpp>
 
-class TestTriangle : public MR::SimpleApp {
+class TestTriangle : public mr::SimpleApp {
 public:
-    MR::IGeometry* geom;
+    mr::IGeometry* geom;
     /*MR::GPUObjectHandlePtr<MR::IShaderProgram> prog;
     MR::GPUObjectHandlePtr<MR::ITexture> tex;*/
-    MR::IShaderProgram* prog;
-    MR::ITexture* tex;
+    mr::IShaderProgram* prog;
+    mr::ITexture* tex;
 
     bool Setup() {
-        MR::MachineInfo::PrintInfo();
+        mr::MachineInfo::PrintInfo();
 
         ///TEST
-        MR::GeometryLoader geom_loader;
-        geom_loader.Import("pyr_test.obj");
-        geom = geom_loader.GetGeometry().At(0);
+        std::string loadModelSrc = "";
+        std::cout << "Load model: ";
+        std::cin >> loadModelSrc;
+
+        bool loadFast = false;
+        std::cout << "Load fast? (0 or 1): ";
+        std::cin >> loadFast;
+
+        mr::SceneLoader scene_loader;
+        scene_loader.Import(loadModelSrc, loadFast);
+        geom = scene_loader.GetGeometry().At(0);
         ///
 
-        prog = MR::ShaderProgram::DefaultWithTexture();
+        prog = mr::ShaderProgram::DefaultWithTexture();
 
         if(prog == nullptr) return false;
 
-        prog->CreateUniform(MR_SHADER_MVP_MAT4, MR::IShaderUniform::Mat4, camera->GetMVPPtr());
-        prog->CreateUniform("MainTex", MR::IShaderUniform::Sampler2D, new int(0));
-
-        /*MR::IMaterialPass* matPass = mat->CreatePass(MR::MaterialFlag::Default());
-        matPass->SetShaderProgram(prog);*/
+        prog->CreateUniform(MR_SHADER_MVP_MAT4, mr::IShaderUniform::Mat4, camera->GetMVPPtr());
+        prog->CreateUniform(MR_SHADER_COLOR_TEX, mr::IShaderUniform::Sampler2D, new int(0));
 
         camera->SetPosition(glm::vec3(0.25f, 0.75f, -0.7f));
         camera->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
         camera->SetFarZ(10000.0f);
 
         //Make texture
-        tex = MR::Texture::FromFile("grid_test_tex.png");
+        tex = mr::Texture::FromFile(scene_loader.GetMaterials().At(0)->GetDescription().texColor);
 
-        MR::ITextureSettings* texSettings = new MR::TextureSettings();
-        texSettings->Create();
-        tex->SetSettings(texSettings);
-        tex->Bind(0);
+        if(tex) {
+            mr::ITextureSettings* texSettings = new mr::TextureSettings();
+            texSettings->Create();
+            tex->SetSettings(texSettings);
+            tex->Bind(0);
+        }
 
         glClearColor(0.2f, 0.2, 0.2, 1.0f);
         glEnable(GL_DEPTH_TEST);
@@ -63,8 +71,16 @@ public:
 
     GLFWwindow* window;
     double mouse_x = 0.0, mouse_y = 0.0;
-    unsigned short _frames_this_second = 0;
-    double _current_time = 0.0;
+
+    class FpsCounter : public mu::TimedCounter {
+    public:
+        void Invoke() override {
+            printf(("\r"+std::to_string(counter)+" ").c_str());
+        }
+    };
+
+    FpsCounter fps;
+
     void Frame(const float& delta) {
         //Camera moves
         const float move_speed = 8.0f;
@@ -102,13 +118,7 @@ public:
         prog->Use();
         geom->Draw();
 
-        _current_time += delta;
-        ++_frames_this_second;
-        if(_current_time >= 1.0) {
-            printf(("\r"+std::to_string(_frames_this_second)).c_str());
-            _current_time = 0.0;
-            _frames_this_second = 0;
-        }
+        fps.Count(delta);
     }
 
     void Free() {
@@ -123,7 +133,7 @@ public:
         delete prog;*/
     }
 
-    TestTriangle() : MR::SimpleApp() {}
+    TestTriangle() : mr::SimpleApp() {}
     virtual ~TestTriangle() {  }
 };
 

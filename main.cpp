@@ -1,5 +1,5 @@
 #include <MorglodsRender.hpp>
-#include "mu/Thread.hpp"
+#include "Thread.hpp"
 #include <Types.hpp>
 #include <Utils/FilesIO.hpp>
 #include <Materials/Material.hpp>
@@ -24,7 +24,7 @@ int SCREEN_CENTER_Y = 300;
 int main() {
 
     //Render settings
-    MR::WindowHints hints;
+    mr::WindowHints hints;
 
     //Config
     std::cout << "Loading config from \"settings.cfg\"... ";

@@ -1,5 +1,5 @@
 #include <Utils/Containers.hpp>
-#include "mu/Time.hpp"
+#include "Time.hpp"
 #include <iostream>
 
 void TestDynamicArrays() {
@@ -38,7 +38,7 @@ void TestDynamicArrays() {
 
     std::cout << "MR::TDynamicArray<char>\n";
     {
-        MR::TDynamicArray<char> darray_;
+        mr::TDynamicArray<char> darray_;
 
         TimerT timer;
         timer.Start();

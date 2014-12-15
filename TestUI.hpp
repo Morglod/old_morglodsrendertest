@@ -1,9 +1,9 @@
 /*
     EVENTS
 */
-class ChangeColorEvent : public MR::EventHandle<MR::IUIElement*, const glm::vec2&, const int&, const bool&> {
+class ChangeColorEvent : public mr::EventHandle<mr::IUIElement*, const glm::vec2&, const int&, const bool&> {
 public:
-    void Invoke(MR::EventListener<MR::IUIElement*, const glm::vec2&, const int&, const bool&>* ptr, MR::IUIElement* sender, const glm::vec2& pos, const int& mbutton, const bool& state) override {
+    void Invoke(mr::EventListener<mr::IUIElement*, const glm::vec2&, const int&, const bool&>* ptr, mr::IUIElement* sender, const glm::vec2& pos, const int& mbutton, const bool& state) override {
         if(state) sender->SetColor(_a);
         else sender->SetColor(_b);
     }
@@ -16,15 +16,15 @@ protected:
 /*
     APP CLASS
 */
-class TestUI : public MR::SimpleApp {
+class TestUI : public mr::SimpleApp {
 public:
-    MR::UIElement* ui_test_box;
+    mr::UIElement* ui_test_box;
 
     bool Setup() {
-        ui_test_box = new MR::UIElement(MR::UIManager::Instance(), MR::Rect(25.0f, 25.0f, 25.0f, 50.0f));
+        ui_test_box = new mr::UIElement(mr::UIManager::Instance(), mr::Rect(25.0f, 25.0f, 25.0f, 50.0f));
         ui_test_box->SetColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
         ui_test_box->OnMouseHoverDownStateChanged.RegisterHandle(new ChangeColorEvent(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f), glm::vec4(0.0f, 1.0f, 0.0f, 1.0f)));
-        MR::UIManager::Instance()->Add(ui_test_box);
+        mr::UIManager::Instance()->Add(ui_test_box);
 
         glClearColor(0.8f, 0.82f, 0.83f, 1.0f);
 
@@ -55,7 +55,7 @@ public:
     void Frame(const float& delta) {
         Input();
 
-        MR::UIManager::Instance()->Frame(sys, delta);
+        mr::UIManager::Instance()->Frame(sys, delta);
 
         if(window->IsIconified()) {
             Sleep(1000);
