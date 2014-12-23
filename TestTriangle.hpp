@@ -29,6 +29,10 @@ public:
         std::cout << "Load model: ";
         std::cin >> loadModelSrc;
 
+        std::string loadTexSrc = "";
+        std::cout << "Load tex: ";
+        std::cin >> loadTexSrc;
+
         bool loadFast = false;
         std::cout << "Load fast? (0 or 1): ";
         std::cin >> loadFast;
@@ -50,7 +54,7 @@ public:
         camera->SetFarZ(10000.0f);
 
         //Make texture
-        tex = mr::Texture::FromFile(scene_loader.GetMaterials().At(0)->GetDescription().texColor);
+        tex = mr::Texture::FromFile(loadTexSrc);
 
         if(tex) {
             mr::ITextureSettings* texSettings = new mr::TextureSettings();
@@ -64,7 +68,7 @@ public:
         glEnable(GL_CULL_FACE);
         glDepthFunc(GL_LESS);
 
-        window = context.GetMainWindow();
+        window = context->GetWindow();
 
         return true;
     }

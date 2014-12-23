@@ -3,11 +3,9 @@ Version: 4.4.0 NVIDIA 344.65
 GLSL: 4.40 NVIDIA via Cg compiler
 OpenGL: 4 4
 GPU: GeForce GTX 760/PCIe/SSE2 from NVIDIA Corporation
-Mem Total(kb): 2097152 Current free (kb): 175212
+Mem Total(kb): 2097152 Current free (kb): 1219604
 
 
 
 Nvidia VBUM: 1
 Direct state access: 1
-Tex color: "
-

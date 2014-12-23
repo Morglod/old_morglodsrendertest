@@ -24,7 +24,7 @@ int SCREEN_CENTER_Y = 300;
 int main() {
 
     //Render settings
-    mr::WindowHints hints;
+    mr::GLFWWindowHints hints;
 
     //Config
     std::cout << "Loading config from \"settings.cfg\"... ";

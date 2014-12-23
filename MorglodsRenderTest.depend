@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1418654428 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\main.cpp
+1419365962 source:c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\main.cpp
 	<MorglodsRender.hpp>
 	"Thread.hpp"
 	<Types.hpp>
@@ -286,8 +286,8 @@
 	<bitset>
 	<glm/glm.hpp>
 
-1418654438 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\simpleapp.hpp
-	"Context.hpp"
+1419366305 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\simpleapp.hpp
+	"ContextManager.hpp"
 	"Utils/Exception.hpp"
 	"ConfigClass.hpp"
 	"Config.hpp"
@@ -295,7 +295,7 @@
 	"Scene/PerspectiveCamera.hpp"
 	"Utils/Log.hpp"
 	<GL\glew.h>
-	<GLFW\glfw3.h>
+	"ContextGLFW.hpp"
 	<iostream>
 	<fstream>
 	<windows.h>
@@ -323,7 +323,7 @@
 
 1396841671 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testlods.hpp
 
-1418658123 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testtriangle.hpp
+1419365952 c:\users\volodyam\documents\codeblocksprojects\morglodsrendertest\testtriangle.hpp
 	"TimedCounter.hpp"
 	<Buffers/Buffers.hpp>
 	<Utils/Serialization.hpp>
@@ -696,7 +696,7 @@
 	"Types.hpp"
 	"stddef.h"
 
-1416802603 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\core.hpp
+1419127437 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\core.hpp
 
 1407332489 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\textures\textureresource.hpp
 	"../Resources/ResourceManager.hpp"
@@ -1119,8 +1119,8 @@
 1412536732 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\importer\objimport.hpp
 	<string>
 
-1416802605 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\pointers.hpp
-	"../Context.hpp"
+1419127943 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\utils\pointers.hpp
+	"../ContextManager.hpp"
 
 1414185590 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\geometry\geometryloader.hpp
 	<string>
@@ -1152,7 +1152,7 @@
 
 1415641277 c:\libs\projects\morglodsutils\singleton.hpp
 
-1415551454 c:\libs\projects\morglodsutils\configclass.hpp
+1418918432 c:\libs\projects\morglodsutils\configclass.hpp
 	<string>
 	<sstream>
 	<map>
@@ -1162,4 +1162,10 @@
 1415588583 c:\libs\projects\morglodsutils\time.hpp
 	<chrono>
 	<string>
+
+1419367078 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\contextmanager.hpp
+
+1419367208 c:\users\volodyam\documents\codeblocksprojects\morglodsrender\contextglfw.hpp
+	"ContextManager.hpp"
+	<GLFW\glfw3.h>
 
