@@ -31,7 +31,7 @@ public:
     mr::SceneManager sceneManager;
 
     bool Setup() {
-        mr::machineInfo::PrintInfo();
+        mr::machine::PrintInfo();
 
         ///TEST
         std::string loadModelSrc = "";

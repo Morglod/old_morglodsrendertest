@@ -1,1 +1,0 @@
-copy "C:\Users\VolodyaM\Documents\CodeBlocksProjects\MorglodsRender\BUILD\MorglodsRender.dll" MorglodsRender.dll
