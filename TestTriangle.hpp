@@ -6,6 +6,12 @@
 #include <Geometry/GeometryObject.hpp>
 #include <Geometry/GeometryManager.hpp>
 
+#include <Models/Models.hpp>
+#include <Scene/Node.hpp>
+#include <Geometry/Mesh.hpp>
+#include <Scene/SceneManager.hpp>
+#include <Scene/Entity.hpp>
+
 #include <Textures/TextureObjects.hpp>
 #include <Textures/TextureSettings.hpp>
 
@@ -20,9 +26,12 @@ public:
     MR::GPUObjectHandlePtr<MR::ITexture> tex;*/
     mr::IShaderProgram* prog;
     mr::ITexture* tex;
+    mr::ModelPtr model;
+    mr::MeshPtr mesh;
+    mr::SceneManager sceneManager;
 
     bool Setup() {
-        mr::MachineInfo::PrintInfo();
+        mr::machineInfo::PrintInfo();
 
         ///TEST
         std::string loadModelSrc = "";
@@ -62,6 +71,31 @@ public:
             tex->SetSettings(texSettings);
             tex->Bind(0);
         }
+
+        model = mr::ModelPtr(new mr::Model());
+        mr::SubModel* subModel = new mr::SubModel();
+
+        mesh = mr::MeshPtr(mr::Mesh::Create(
+            mr::TStaticArray<mr::IGeometry*> {
+                geom
+            },
+            nullptr
+        ));
+
+        subModel->SetMeshes(
+            mr::TStaticArray<mr::MeshWeakPtr> {
+                mr::MeshWeakPtr(mesh)
+            }
+        );
+
+        model->SetLods(
+            mr::TStaticArray<mr::SubModelPtr> {
+                mr::SubModelPtr(subModel)
+            }
+        );
+
+        mr::EntityPtr entity = sceneManager.CreateEntity(model);
+        sceneManager.GetRootNode()->CreateChild()->AddChild(std::static_pointer_cast<mr::SceneNode>(entity));
 
         glClearColor(0.2f, 0.2, 0.2, 1.0f);
         glEnable(GL_DEPTH_TEST);
@@ -120,21 +154,13 @@ public:
         //Draw
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         prog->Use();
-        geom->Draw();
+
+        sceneManager.Draw();
 
         fps.Count(delta);
     }
 
     void Free() {
-        /*delete geom[0];
-        delete geom[1];
-        delete geom[2];
-        delete geom[3];
-        delete geom[4];
-        //delete mat;
-        delete mesh;
-        prog->Destroy();
-        delete prog;*/
     }
 
     TestTriangle() : mr::SimpleApp() {}
