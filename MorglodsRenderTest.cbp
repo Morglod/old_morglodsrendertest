@@ -27,6 +27,7 @@
 					<Add library="zlib" />
 					<Add library="pthread" />
 					<Add library="C:\TDM-GCC-64\lib\libassimp.dll.a" />
+					<Add library="C:\Libs\Projects\MorglodsUtils\bin\Debug\libMorglodsUtils.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -45,6 +46,7 @@
 					<Add library="C:\TDM-GCC-64\lib\glfw3dll.a" />
 					<Add library="glew32" />
 					<Add library="..\MorglodsRender\BUILD\libMorglodsRender.a" />
+					<Add library="C:\Libs\Projects\MorglodsUtils\bin\Release\libMorglodsUtils.a" />
 				</Linker>
 			</Target>
 		</Build>
@@ -57,7 +59,6 @@
 			<Add directory="C:/Libs/Projects/MorglodsUtils" />
 		</Compiler>
 		<Linker>
-			<Add library="C:\Libs\Projects\MorglodsUtils\bin\Release\libMorglodsUtils.a" />
 			<Add directory="../MorglodsRender" />
 		</Linker>
 		<Unit filename="ShaderEditor.cpp" />

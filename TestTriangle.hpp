@@ -4,6 +4,7 @@
 #include <Utils/Serialization.hpp>
 #include <Geometry/GeometryBuilder.hpp>
 #include <Geometry/GeometryObject.hpp>
+#include <Geometry/GeometryFormats.hpp>
 #include <Geometry/GeometryManager.hpp>
 
 #include <Models/Models.hpp>
@@ -29,6 +30,8 @@ public:
     mr::ModelPtr model;
     mr::MeshPtr mesh;
     mr::SceneManager sceneManager;
+    mr::IVertexAttribute* instAttrib;
+    mr::IGPUBuffer* gpuBufff;
 
     bool Setup() {
         mr::machine::PrintInfo();
@@ -49,6 +52,20 @@ public:
         mr::SceneLoader scene_loader;
         scene_loader.Import(loadModelSrc, loadFast);
         geom = scene_loader.GetGeometry().At(0);
+
+        //Instancing
+        const unsigned int inst_num = 100;
+        gpuBufff = new mr::GPUBuffer();
+        gpuBufff->Allocate(mr::IGPUBuffer::Static, sizeof(glm::vec3) * inst_num);
+        glm::vec3 instPos[100];
+        for(unsigned int i = 0; i < inst_num; ++i) {
+            instPos[i] = glm::vec3(50.0f * i, 0.0f, 0.0f);
+        }
+        gpuBufff->Write(instPos, 0, 0, sizeof(glm::vec3) * inst_num, nullptr, nullptr);
+
+        instAttrib = new mr::VertexAttributeCustom(3, &mr::VertexDataTypeFloat::GetInstance(), 4, 1);
+        geom->GetGeometryBuffer()->SetAttribute(instAttrib, gpuBufff);
+        geom->GetDrawParams()->SetInstancesNum(inst_num);
         ///
 
         prog = mr::ShaderProgram::DefaultWithTexture();
@@ -122,7 +139,8 @@ public:
     void Frame(const float& delta) {
         //Camera moves
         const float move_speed = 8.0f;
-        const float mouse_speed = 70.0f;
+        //const float mouse_speed = 0.0001f;
+        const float mouse_speed = 8.0f;
 
         glfwGetCursorPos(window, &mouse_x, &mouse_y);
 
@@ -147,8 +165,8 @@ public:
         if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT)) {
             glfwSetCursorPos(window, (double)SCREEN_CENTER_X, (double)SCREEN_CENTER_Y);
 
-            camera->Roll((SCREEN_CENTER_X - (int)mouse_x) * mouse_speed * delta);
-            camera->Yaw((SCREEN_CENTER_Y - (int)mouse_y) * mouse_speed * delta);
+            camera->Roll((float)(SCREEN_CENTER_X - (int)mouse_x) * mouse_speed * delta /*/ delta*/);
+            camera->Yaw((float)(SCREEN_CENTER_Y - (int)mouse_y) * mouse_speed * delta /*/ delta*/);
         }
 
         //Draw
