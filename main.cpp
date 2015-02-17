@@ -4,7 +4,7 @@
 #include <Utils/FilesIO.hpp>
 #include <Materials/Material.hpp>
 
-#include <SimpleApp.hpp>
+#include <SimpleApp/SimpleApp.hpp>
 
 /*
 //Do not use hybryd graphics

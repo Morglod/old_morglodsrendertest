@@ -31,7 +31,7 @@ public:
     mr::MeshPtr mesh;
     mr::SceneManager sceneManager;
     mr::IVertexAttribute* instAttrib;
-    mr::IGPUBuffer* gpuBufff;
+    mr::IGPUBuffer* instGpuBuff;
 
     bool Setup() {
         mr::machine::PrintInfo();
@@ -54,17 +54,19 @@ public:
         geom = scene_loader.GetGeometry().At(0);
 
         //Instancing
-        const unsigned int inst_num = 100;
-        gpuBufff = new mr::GPUBuffer();
-        gpuBufff->Allocate(mr::IGPUBuffer::Static, sizeof(glm::vec3) * inst_num);
-        glm::vec3 instPos[100];
+        unsigned int inst_num = 100;
+        std::cout << "Instances num: ";
+        std::cin >> inst_num;
+        instGpuBuff = new mr::GPUBuffer();
+        instGpuBuff->Allocate(mr::IGPUBuffer::Static, sizeof(glm::vec3) * inst_num);
+        glm::vec3 instPos[inst_num];
         for(unsigned int i = 0; i < inst_num; ++i) {
             instPos[i] = glm::vec3(50.0f * i, 0.0f, 0.0f);
         }
-        gpuBufff->Write(instPos, 0, 0, sizeof(glm::vec3) * inst_num, nullptr, nullptr);
+        instGpuBuff->Write(instPos, 0, 0, sizeof(glm::vec3) * inst_num, nullptr, nullptr);
 
         instAttrib = new mr::VertexAttributeCustom(3, &mr::VertexDataTypeFloat::GetInstance(), 4, 1);
-        geom->GetGeometryBuffer()->SetAttribute(instAttrib, gpuBufff);
+        geom->GetGeometryBuffer()->SetAttribute(instAttrib, instGpuBuff);
         geom->GetDrawParams()->SetInstancesNum(inst_num);
         ///
 
