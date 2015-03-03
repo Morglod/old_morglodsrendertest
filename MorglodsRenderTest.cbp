@@ -37,6 +37,7 @@
 				<Option type="1" />
 				<Option compiler="tdm_gcc64" />
 				<Compiler>
+					<Add option="-march=corei7-avx" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
 					<Add option="-Wall" />

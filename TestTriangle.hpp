@@ -59,11 +59,21 @@ public:
         std::cin >> inst_num;
         instGpuBuff = new mr::GPUBuffer();
         instGpuBuff->Allocate(mr::IGPUBuffer::Static, sizeof(glm::vec3) * inst_num);
-        glm::vec3 instPos[inst_num];
-        for(unsigned int i = 0; i < inst_num; ++i) {
-            instPos[i] = glm::vec3(50.0f * i, 0.0f, 0.0f);
+
+        mr::IGPUBuffer::IMappedRangePtr mappedInstGpuBuff = instGpuBuff->Map(0, sizeof(glm::vec3) * inst_num, mr::IGPUBuffer::IMappedRange::Write | mr::IGPUBuffer::IMappedRange::Unsynchronized | mr::IGPUBuffer::IMappedRange::Invalidate);
+        if(mappedInstGpuBuff == nullptr) {
+            glm::vec3 instPos[inst_num];
+            for(unsigned int i = 0; i < inst_num; ++i) {
+                instPos[i] = glm::vec3(50.0f * i, 0.0f, 0.0f);
+            }
+            instGpuBuff->Write(instPos, 0, 0, sizeof(glm::vec3) * inst_num, nullptr, nullptr);
+        } else {
+            for(unsigned int i = 0; i < inst_num; ++i) {
+                glm::vec3* instPos = (glm::vec3*)(mappedInstGpuBuff->Get());
+                instPos[i] = glm::vec3(50.0f * i, 0.0f, 0.0f);
+            }
+            mappedInstGpuBuff->UnMap();
         }
-        instGpuBuff->Write(instPos, 0, 0, sizeof(glm::vec3) * inst_num, nullptr, nullptr);
 
         instAttrib = new mr::VertexAttributeCustom(3, &mr::VertexDataTypeFloat::GetInstance(), 4, 1);
         geom->GetGeometryBuffer()->SetAttribute(instAttrib, instGpuBuff);
