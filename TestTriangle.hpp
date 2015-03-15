@@ -16,6 +16,11 @@
 #include <Textures/TextureObjects.hpp>
 #include <Textures/TextureSettings.hpp>
 
+#include <RTT/FrameBufferObjects.hpp>
+#include <RTT/RenderBufferObject.hpp>
+
+#include <StateCache.hpp>
+
 #include <Utils/Pointers.hpp>
 
 #include <Scene/SceneLoader.hpp>
@@ -28,35 +33,67 @@ public:
     mr::IShaderProgram* prog;
     mr::ITexture* tex;
     mr::ModelPtr model;
-    mr::MeshPtr mesh;
+    std::vector<mr::MeshPtr> meshes;
     mr::SceneManager sceneManager;
     mr::IVertexAttribute* instAttrib;
     mr::IGPUBuffer* instGpuBuff;
+   // mr::IFrameBuffer* frameBuffer;
 
     bool Setup() {
         mr::machine::PrintInfo();
 
+        //Create and set framebuffer
+        /*mr::IRenderBuffer * renderBuffer = new mr::RenderBuffer();
+        renderBuffer->Create(mr::ITexture::StorageDataFormat::SDF_RGB8, 800, 600, 0);
+
+        frameBuffer = new mr::FrameBuffer();
+        frameBuffer->Create();
+        frameBuffer->Bind(mr::IFrameBuffer::BindTarget::DrawFramebuffer);
+        frameBuffer->SetRenderBufferToColor(renderBuffer, 0);
+        std::cout << mr::FrameBuffer::CompletionStatusToString(frameBuffer->CheckCompletion(mr::IFrameBuffer::BindTarget::DrawFramebuffer));*/
+
+        //Load shader
+        prog = mr::ShaderProgram::DefaultWithTexture();
+
+        if(prog == nullptr) return false;
+
+        prog->CreateUniform(MR_SHADER_MVP_MAT4, mr::IShaderUniform::Mat4, camera->GetMVPPtr());
+        prog->CreateUniform(MR_SHADER_COLOR_TEX, mr::IShaderUniform::Sampler2D, new int(0));
+
         ///TEST
         std::string loadModelSrc = "";
+        std::string loadTexSrc = "";
+        bool loadFast = false;
+        unsigned int inst_num = 100;
+
+#ifndef DEBUG_BUILD
         std::cout << "Load model: ";
         std::cin >> loadModelSrc;
 
-        std::string loadTexSrc = "";
         std::cout << "Load tex: ";
         std::cin >> loadTexSrc;
 
-        bool loadFast = false;
         std::cout << "Load fast? (0 or 1): ";
         std::cin >> loadFast;
+
+        std::cout << "Instances num: ";
+        std::cin >> inst_num;
+#else
+        loadModelSrc = "pyr_test.obj";
+        loadTexSrc = "mramor6x6.png";
+        loadFast = false;
+        inst_num = 1;
+#endif
 
         mr::SceneLoader scene_loader;
         scene_loader.Import(loadModelSrc, loadFast);
         geom = scene_loader.GetGeometry().At(0);
+        auto sceneMaterials = scene_loader.GetMaterials();
+        for(size_t i = 0; i < sceneMaterials.GetNum(); ++i) {
+            sceneMaterials.At(i)->SetShaderProgram(prog);
+        }
 
         //Instancing
-        unsigned int inst_num = 100;
-        std::cout << "Instances num: ";
-        std::cin >> inst_num;
         instGpuBuff = new mr::GPUBuffer();
         instGpuBuff->Allocate(mr::IGPUBuffer::Static, sizeof(glm::vec3) * inst_num);
 
@@ -80,13 +117,6 @@ public:
         geom->GetDrawParams()->SetInstancesNum(inst_num);
         ///
 
-        prog = mr::ShaderProgram::DefaultWithTexture();
-
-        if(prog == nullptr) return false;
-
-        prog->CreateUniform(MR_SHADER_MVP_MAT4, mr::IShaderUniform::Mat4, camera->GetMVPPtr());
-        prog->CreateUniform(MR_SHADER_COLOR_TEX, mr::IShaderUniform::Sampler2D, new int(0));
-
         camera->SetPosition(glm::vec3(0.25f, 0.75f, -0.7f));
         camera->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
         camera->SetFarZ(10000.0f);
@@ -95,27 +125,24 @@ public:
         tex = mr::Texture::FromFile(loadTexSrc);
 
         if(tex) {
+            mr::StateCache* stateCache = mr::StateCache::GetDefault();
             mr::ITextureSettings* texSettings = new mr::TextureSettings();
             texSettings->Create();
             tex->SetSettings(texSettings);
-            tex->Bind(0);
+            stateCache->BindTexture(tex, 0);
         }
 
         model = mr::ModelPtr(new mr::Model());
         mr::SubModel* subModel = new mr::SubModel();
 
-        mesh = mr::MeshPtr(mr::Mesh::Create(
-            mr::TStaticArray<mr::IGeometry*> {
-                geom
-            },
-            nullptr
-        ));
+        auto sceneMeshes = scene_loader.GetMeshes();
+        mr::TStaticArray<mr::MeshWeakPtr> subModelMeshes(sceneMeshes.GetNum());
+        for(size_t i = 0; i < sceneMeshes.GetNum(); ++i) {
+            meshes.push_back(mr::MeshPtr(sceneMeshes.At(i)));
+            subModelMeshes.At(i) = mr::MeshWeakPtr(meshes[meshes.size()-1]);
+        }
 
-        subModel->SetMeshes(
-            mr::TStaticArray<mr::MeshWeakPtr> {
-                mr::MeshWeakPtr(mesh)
-            }
-        );
+        subModel->SetMeshes( subModelMeshes );
 
         model->SetLods(
             mr::TStaticArray<mr::SubModelPtr> {
@@ -188,6 +215,7 @@ public:
         sceneManager.Draw();
 
         fps.Count(delta);
+
     }
 
     void Free() {

@@ -13,9 +13,12 @@
 				<Option type="1" />
 				<Option compiler="tdm_gcc64" />
 				<Compiler>
+					<Add option="-pg" />
 					<Add option="-g" />
+					<Add option="-DDEBUG_BUILD" />
 				</Compiler>
 				<Linker>
+					<Add option="-pg -lgmon" />
 					<Add library="..\MorglodsRender\BUILD\libdMorglodsRender.a" />
 					<Add library="SOIL" />
 					<Add library="glfw3" />
