@@ -72,6 +72,7 @@ public:
         vformat->SetAttributesNum(2);
         vformat->AddVertexAttribute(new VertexAttributePos3F());
         vformat->AddVertexAttribute(new VertexAttributeCustom(3, VertexDataTypeFloat::Instance(), 1));
+        vformat->Complete();
 
         iformat = new IndexFormatCustom(VertexDataTypeUInt::Instance());
 
