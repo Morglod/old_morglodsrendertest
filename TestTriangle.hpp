@@ -24,6 +24,9 @@
 #include <Utils/Pointers.hpp>
 
 #include <Scene/SceneLoader.hpp>
+#include <Shaders/ShaderManager.hpp>
+
+#include <Macro.hpp>
 
 class TestTriangle : public mr::SimpleApp {
 public:
@@ -52,13 +55,11 @@ public:
         frameBuffer->SetRenderBufferToColor(renderBuffer, 0);
         std::cout << mr::FrameBuffer::CompletionStatusToString(frameBuffer->CheckCompletion(mr::IFrameBuffer::BindTarget::DrawFramebuffer));*/
 
-        //Load shader
-        prog = mr::ShaderProgram::DefaultWithTexture();
+        //Setup shaders
 
-        if(prog == nullptr) return false;
-
-        prog->CreateUniform(MR_SHADER_MVP_MAT4, mr::IShaderUniform::Mat4, camera->GetMVPPtr());
-        prog->CreateUniform(MR_SHADER_COLOR_TEX, mr::IShaderUniform::Sampler2D, new int(0));
+        prog = mr::ShaderManager::GetInstance()->DefaultShaderProgram();
+        prog->CreateUniform("MR_MAT_MVP", mr::IShaderUniform::Mat4, camera->GetMVPPtr());
+        prog->CreateUniform("MR_TEX_COLOR", mr::IShaderUniform::Sampler2D, new int(0));
 
         ///TEST
         std::string loadModelSrc = "";
@@ -233,12 +234,10 @@ public:
 
         //Draw
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        prog->Use();
 
         sceneManager.Draw();
 
         fps.Count(delta);
-
     }
 
     void Free() {
