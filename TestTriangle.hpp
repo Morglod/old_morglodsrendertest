@@ -28,6 +28,9 @@
 
 #include <Macro.hpp>
 
+#include <Images/Image.hpp>
+#include <Images/SOILwrapper.hpp>
+
 class TestTriangle : public mr::SimpleApp {
 public:
     mr::IGeometry* geom;
@@ -54,6 +57,23 @@ public:
         frameBuffer->Bind(mr::IFrameBuffer::BindTarget::DrawFramebuffer);
         frameBuffer->SetRenderBufferToColor(renderBuffer, 0);
         std::cout << mr::FrameBuffer::CompletionStatusToString(frameBuffer->CheckCompletion(mr::IFrameBuffer::BindTarget::DrawFramebuffer));*/
+
+        {
+            mr::Image img;
+            std::cout << "Create: " << img.Create(glm::ivec2(500, 500), 3, glm::ivec4(255,255,255,255)) << std::endl;
+            img.DrawLine(glm::ivec2(0,0), glm::ivec2(499, 499), glm::ivec4(255,0,0,255));
+            img.DrawRect(glm::ivec2(100,100), glm::ivec2(399, 399), glm::ivec4(0,255,0,255), false);
+            img.DrawRect(glm::ivec2(200,200), glm::ivec2(299, 299), glm::ivec4(0,0,255,255), true);
+            img.Invert();
+
+            mr::IImagePtr img2 = img.Resize(glm::ivec2(300, 300), mr::IImage::NearestNeighborScale);
+            img.Lerp(glm::ivec2(50,50), img2.get(), 0.8f);
+
+            mr::ImageSaverSOIL soil;
+            mr::IImageSaver::Options options; options.fileType = mr::IImageSaver::Options::BMP;
+            std::cout << "Save: " << soil.Save("out.bmp", options, &img) << std::endl;
+            std::cout << "Save2: " << soil.Save("out2.bmp", options, img2.get()) << std::endl;
+        }
 
         //Setup shaders
 
