@@ -31,6 +31,8 @@
 #include <Images/Image.hpp>
 #include <Images/SOILwrapper.hpp>
 
+#define POINT_LIGHTS_NUM 6
+
 class TestTriangle : public mr::SimpleApp {
 public:
     mr::IGeometry* geom;
@@ -38,12 +40,25 @@ public:
     MR::GPUObjectHandlePtr<MR::ITexture> tex;*/
     mr::IShaderProgram* prog;
     mr::ITexture* tex;
+    mr::ITexture* tex2;
     mr::ModelPtr model;
     std::vector<mr::MeshPtr> meshes;
     mr::SceneManager sceneManager;
     mr::IVertexAttribute* instAttrib;
     mr::IGPUBuffer* instGpuBuff;
    // mr::IFrameBuffer* frameBuffer;
+
+   int texColorUnit = 0;
+   int sphericalTexUnit = 1;
+
+    struct LightDesc {
+        glm::vec3 pos, color;
+        float innerR, outerR;
+        LightDesc(glm::vec3 const& p, glm::vec3 const& c, float iR, float oR) : pos(p), color(c), innerR(iR), outerR(oR) {}
+    };
+
+    const int point_lights_num = POINT_LIGHTS_NUM;
+    std::vector<LightDesc> pointLights;
 
     bool Setup() {
         mr::machine::PrintInfo();
@@ -77,9 +92,37 @@ public:
 
         //Setup shaders
 
-        prog = mr::ShaderManager::GetInstance()->DefaultShaderProgram();
-        prog->CreateUniform("MR_MAT_MVP", mr::IShaderUniform::Mat4, camera->GetMVPPtr());
-        prog->CreateUniform("MR_TEX_COLOR", mr::IShaderUniform::Sampler2D, new int(0));
+        mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
+        prog = shaderManager->DefaultShaderProgram();
+
+        mr::ShaderUniformDesc mvpUniform("MR_MAT_MVP", mr::IShaderUniformRef::Mat4);
+        shaderManager->SetGlobalUniform(mvpUniform, camera->GetMVPPtr());
+
+        mr::ShaderUniformDesc texColorUniform("MR_TEX_COLOR", mr::IShaderUniformRef::Sampler2D);
+        shaderManager->SetGlobalUniform(texColorUniform, &texColorUnit);
+
+        shaderManager->SetGlobalUniform(mr::ShaderUniformDesc("MR_numPointLights", mr::IShaderUniformRef::Int), &point_lights_num);
+
+        for(int i = 0; i < point_lights_num; i++) {
+            const std::string light_index = std::to_string(i);
+            pointLights.push_back(LightDesc(glm::vec3(i * 20, 1, 0), glm::vec3(1,1,1), 10, 50));
+            mr::ShaderUniformDesc   u_lightPos("MR_pointLights["+light_index+"].pos", mr::IShaderUniformRef::Vec3),
+                                    u_lightColor("MR_pointLights["+light_index+"].color", mr::IShaderUniformRef::Vec3),
+                                    u_lightIR("MR_pointLights["+light_index+"].innerRange", mr::IShaderUniformRef::Float),
+                                    u_lightOR("MR_pointLights["+light_index+"].outerRange", mr::IShaderUniformRef::Float);
+            shaderManager->SetGlobalUniform(u_lightPos, &pointLights[i].pos);
+            shaderManager->SetGlobalUniform(u_lightColor, &pointLights[i].color);
+            shaderManager->SetGlobalUniform(u_lightIR, &pointLights[i].innerR);
+            shaderManager->SetGlobalUniform(u_lightOR, &pointLights[i].outerR);
+            std::cout << std::to_string(pointLights[i].pos) << std::endl;
+            std::cout << std::to_string(pointLights[i].color) << std::endl;
+            std::cout << std::to_string(pointLights[i].innerR) << std::endl;
+            std::cout << std::to_string(pointLights[i].outerR) << std::endl;
+        }
+
+        mr::ShaderUniformDesc texColorUniform2("testSphericalLightMap", mr::IShaderUniformRef::Sampler2D);
+        //shaderManager->SetGlobalUniform(texColorUniform2, &sphericalTexUnit);
+
 
         ///TEST
         std::string loadModelSrc = "";
@@ -112,7 +155,21 @@ public:
 #endif
 
         mr::SceneLoader scene_loader;
-        scene_loader.Import(loadModelSrc, mr::SceneLoader::ImportOptions());
+        mr::SceneLoader::ImportOptions importOptions;
+        unsigned char import_counter = 0;
+        importOptions.assimpProcessCallback = [&import_counter](float percent) -> bool {
+            std::cout << "\rImporting";
+            for(unsigned char i = 0; i < import_counter; ++i) {
+                std::cout << '.';
+            }
+            ++import_counter;
+            if(import_counter > 3) import_counter = 0;
+            return true;
+        };
+        importOptions.progressCallback = [](mr::SceneLoader::ProgressInfo const& info) {
+            std::cout << "\rMeshes (" << info.meshes << "/" << info.totalMeshes << "), Materials (" << info.materials << "/" << info.totalMaterials << ")";
+        };
+        scene_loader.Import(loadModelSrc, importOptions);
 
         auto sceneMaterials = scene_loader.GetMaterials();
         for(size_t i = 0; i < sceneMaterials.GetNum(); ++i) {
@@ -171,6 +228,16 @@ public:
             stateCache->BindTexture(tex, 0);
         }
 
+        tex2 = mr::Texture::FromFile("material8.png");
+
+        if(tex2) {
+            mr::StateCache* stateCache = mr::StateCache::GetDefault();
+            mr::ITextureSettings* texSettings = new mr::TextureSettings();
+            texSettings->Create();
+            tex2->SetSettings(texSettings);
+            stateCache->BindTexture(tex2, 1);
+        }
+
         model = mr::ModelPtr(new mr::Model());
         mr::SubModel* subModel = new mr::SubModel();
 
@@ -199,7 +266,7 @@ public:
 
         window = context->GetWindow();
 
-        std::cout << "GPU Buffers mem: " << mr::GPUBuffersManager::GetInstance().GetUsedGPUMemory() << std::endl;
+        std::cout << std::endl << "GPU Buffers mem: " << mr::GPUBuffersManager::GetInstance().GetUsedGPUMemory() << std::endl;
 
         return true;
     }
@@ -254,9 +321,8 @@ public:
 
         //Draw
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+        mr::ShaderManager::GetInstance()->UpdateAllGlobalUniforms();
         sceneManager.Draw();
-
         fps.Count(delta);
     }
 
