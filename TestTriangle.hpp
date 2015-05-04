@@ -31,13 +31,9 @@
 #include <Images/Image.hpp>
 #include <Images/SOILwrapper.hpp>
 
-#define POINT_LIGHTS_NUM 6
-
 class TestTriangle : public mr::SimpleApp {
 public:
     mr::IGeometry* geom;
-    /*MR::GPUObjectHandlePtr<MR::IShaderProgram> prog;
-    MR::GPUObjectHandlePtr<MR::ITexture> tex;*/
     mr::IShaderProgram* prog;
     mr::ITexture* tex;
     mr::ITexture* tex2;
@@ -46,7 +42,8 @@ public:
     mr::SceneManager sceneManager;
     mr::IVertexAttribute* instAttrib;
     mr::IGPUBuffer* instGpuBuff;
-   // mr::IFrameBuffer* frameBuffer;
+    mr::IGPUBuffer* lightsGpuBuff;
+    unsigned int lightsGpuBuff_bindindex = 0;
 
    int texColorUnit = 0;
    int sphericalTexUnit = 1;
@@ -57,72 +54,52 @@ public:
         LightDesc(glm::vec3 const& p, glm::vec3 const& c, float iR, float oR) : pos(p), color(c), innerR(iR), outerR(oR) {}
     };
 
-    const int point_lights_num = POINT_LIGHTS_NUM;
-    std::vector<LightDesc> pointLights;
+    struct LightsList {
+        int num = 0;
+        std::vector<LightDesc> pointLights;
+
+        inline LightDesc& Create(glm::vec3 const& pos, glm::vec3 const& color, float innerR, float outerR) {
+            pointLights.push_back(LightDesc(pos, color, innerR, outerR));
+            num++;
+            return pointLights[pointLights.size()-1];
+        }
+    };
+
+    LightsList lightsList;
 
     bool Setup() {
         mr::machine::PrintInfo();
 
-        //Create and set framebuffer
-        /*mr::IRenderBuffer * renderBuffer = new mr::RenderBuffer();
-        renderBuffer->Create(mr::ITexture::StorageDataFormat::SDF_RGB8, 800, 600, 0);
-
-        frameBuffer = new mr::FrameBuffer();
-        frameBuffer->Create();
-        frameBuffer->Bind(mr::IFrameBuffer::BindTarget::DrawFramebuffer);
-        frameBuffer->SetRenderBufferToColor(renderBuffer, 0);
-        std::cout << mr::FrameBuffer::CompletionStatusToString(frameBuffer->CheckCompletion(mr::IFrameBuffer::BindTarget::DrawFramebuffer));*/
-
-        {
-            mr::Image img;
-            std::cout << "Create: " << img.Create(glm::ivec2(500, 500), 3, glm::ivec4(255,255,255,255)) << std::endl;
-            img.DrawLine(glm::ivec2(0,0), glm::ivec2(499, 499), glm::ivec4(255,0,0,255));
-            img.DrawRect(glm::ivec2(100,100), glm::ivec2(399, 399), glm::ivec4(0,255,0,255), false);
-            img.DrawRect(glm::ivec2(200,200), glm::ivec2(299, 299), glm::ivec4(0,0,255,255), true);
-            img.Invert();
-
-            mr::IImagePtr img2 = img.Resize(glm::ivec2(300, 300), mr::IImage::NearestNeighborScale);
-            img.Lerp(glm::ivec2(50,50), img2.get(), 0.8f);
-
-            mr::ImageSaverSOIL soil;
-            mr::IImageSaver::Options options; options.fileType = mr::IImageSaver::Options::BMP;
-            std::cout << "Save: " << soil.Save("out.bmp", options, &img) << std::endl;
-            std::cout << "Save2: " << soil.Save("out2.bmp", options, img2.get()) << std::endl;
-        }
-
         //Setup shaders
 
         mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
-        prog = shaderManager->DefaultShaderProgram();
 
-        mr::ShaderUniformDesc mvpUniform("MR_MAT_MVP", mr::IShaderUniformRef::Mat4);
-        shaderManager->SetGlobalUniform(mvpUniform, camera->GetMVPPtr());
+        shaderManager->SetGlobalUniform("MR_MAT_MVP", mr::IShaderUniformRef::Mat4, camera->GetMVPPtr());
+        shaderManager->SetGlobalUniform("MR_TEX_COLOR", mr::IShaderUniformRef::Sampler2D, &texColorUnit);
 
-        mr::ShaderUniformDesc texColorUniform("MR_TEX_COLOR", mr::IShaderUniformRef::Sampler2D);
-        shaderManager->SetGlobalUniform(texColorUniform, &texColorUnit);
+        //Create lights
 
-        shaderManager->SetGlobalUniform(mr::ShaderUniformDesc("MR_numPointLights", mr::IShaderUniformRef::Int), &point_lights_num);
+        lightsList.Create(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
 
-        for(int i = 0; i < point_lights_num; i++) {
-            const std::string light_index = std::to_string(i);
-            pointLights.push_back(LightDesc(glm::vec3(i * 20, 1, 0), glm::vec3(1,1,1), 10, 50));
-            mr::ShaderUniformDesc   u_lightPos("MR_pointLights["+light_index+"].pos", mr::IShaderUniformRef::Vec3),
-                                    u_lightColor("MR_pointLights["+light_index+"].color", mr::IShaderUniformRef::Vec3),
-                                    u_lightIR("MR_pointLights["+light_index+"].innerRange", mr::IShaderUniformRef::Float),
-                                    u_lightOR("MR_pointLights["+light_index+"].outerRange", mr::IShaderUniformRef::Float);
-            shaderManager->SetGlobalUniform(u_lightPos, &pointLights[i].pos);
-            shaderManager->SetGlobalUniform(u_lightColor, &pointLights[i].color);
-            shaderManager->SetGlobalUniform(u_lightIR, &pointLights[i].innerR);
-            shaderManager->SetGlobalUniform(u_lightOR, &pointLights[i].outerR);
-            std::cout << std::to_string(pointLights[i].pos) << std::endl;
-            std::cout << std::to_string(pointLights[i].color) << std::endl;
-            std::cout << std::to_string(pointLights[i].innerR) << std::endl;
-            std::cout << std::to_string(pointLights[i].outerR) << std::endl;
+        for(int i = 0; i < 20; ++i) {
+            lightsList.Create(glm::vec3(i*30,0.1f,0), glm::vec3(0.9,1,0.8), 1, 30);
         }
 
-        mr::ShaderUniformDesc texColorUniform2("testSphericalLightMap", mr::IShaderUniformRef::Sampler2D);
-        //shaderManager->SetGlobalUniform(texColorUniform2, &sphericalTexUnit);
+        shaderManager->SetGlobalUniform("MR_numPointLights", mr::IShaderUniformRef::Int, &lightsList.num);
 
+        lightsGpuBuff = mr::GPUBuffersManager::GetInstance().CreateBuffer(mr::IGPUBuffer::FastChange, 16777216); //16mb
+
+        mr::ShaderUniformMap* shaderUniformMap = shaderManager->DefaultShaderProgram()->GetMap();
+        mr::ShaderUniformBlockInfo* blockInfo = &(shaderUniformMap->GetUniformBlock("MR_pointLights_block"));
+        lightsGpuBuff_bindindex = blockInfo->location;
+
+        for(int i = 0; i < lightsList.num; ++i) {
+            const std::string uniform_name = "MR_pointLights["+std::to_string(i)+"].";
+            lightsGpuBuff->Write(&lightsList.pointLights[i].pos, 0, blockInfo->GetOffset(uniform_name+"pos"), sizeof(glm::vec3), nullptr, nullptr);
+            lightsGpuBuff->Write(&lightsList.pointLights[i].color, 0, blockInfo->GetOffset(uniform_name+"color"), sizeof(glm::vec3), nullptr, nullptr);
+            lightsGpuBuff->Write(&lightsList.pointLights[i].innerR, 0, blockInfo->GetOffset(uniform_name+"innerRange"), sizeof(float), nullptr, nullptr);
+            lightsGpuBuff->Write(&lightsList.pointLights[i].outerR, 0, blockInfo->GetOffset(uniform_name+"outerRange"), sizeof(float), nullptr, nullptr);
+        }
 
         ///TEST
         std::string loadModelSrc = "";
@@ -170,11 +147,6 @@ public:
             std::cout << "\rMeshes (" << info.meshes << "/" << info.totalMeshes << "), Materials (" << info.materials << "/" << info.totalMaterials << ")";
         };
         scene_loader.Import(loadModelSrc, importOptions);
-
-        auto sceneMaterials = scene_loader.GetMaterials();
-        for(size_t i = 0; i < sceneMaterials.GetNum(); ++i) {
-            sceneMaterials.At(i)->SetShaderProgram(prog);
-        }
 
         //Instancing
         unsigned int realInstNum = inst_num * inst_num;
@@ -294,6 +266,16 @@ public:
             move_speed += 1000.0f;
         }
 
+        int pos_offset = mr::ShaderManager::GetInstance()->DefaultShaderProgram()->GetMap()->GetUniformBlock("MR_pointLights_block").GetOffset("MR_pointLights[0].pos");
+        if(glfwGetKey(window, GLFW_KEY_R)) {
+            lightsList.pointLights[0].pos += glm::vec3(1000.0f * delta, 0, 0);
+            lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
+        }
+        if(glfwGetKey(window, GLFW_KEY_F)) {
+            lightsList.pointLights[0].pos -= glm::vec3(1000.0f * delta, 0, 0);
+            lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
+        }
+
         if(glfwGetKey(window, GLFW_KEY_W)) {
             camera->MoveForward(move_speed * delta);
         }
@@ -321,8 +303,14 @@ public:
 
         //Draw
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        mr::ShaderManager::GetInstance()->UpdateAllGlobalUniforms();
+
+        mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
+        shaderManager->UpdateAllGlobalUniforms();
+        glUseProgram(shaderManager->DefaultShaderProgram()->GetGPUHandle());
+        glUniformBlockBinding(shaderManager->DefaultShaderProgram()->GetGPUHandle(), lightsGpuBuff_bindindex, 0);
+        mr::StateCache::GetDefault()->BindUniformBuffer(lightsGpuBuff, 0);
         sceneManager.Draw();
+
         fps.Count(delta);
     }
 

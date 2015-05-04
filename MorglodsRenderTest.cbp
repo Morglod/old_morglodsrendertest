@@ -61,6 +61,7 @@
 			<Add directory="../MorglodsRender" />
 			<Add directory="C:/Libs/AntTweakBar_MinGW_GLOnly/include" />
 			<Add directory="C:/Libs/Projects/MorglodsUtils" />
+			<Add directory="C:/Libs/AntTweakBar_116/AntTweakBar/include" />
 		</Compiler>
 		<Linker>
 			<Add directory="../MorglodsRender" />
