@@ -31,6 +31,7 @@
 					<Add library="pthread" />
 					<Add library="C:\TDM-GCC-64\lib\libassimp.dll.a" />
 					<Add library="C:\Libs\Projects\MorglodsUtils\bin\Debug\libMorglodsUtils.a" />
+					<Add library="C:\Libs\FreeImage\Dist\FreeImage.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">

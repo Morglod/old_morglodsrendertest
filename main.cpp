@@ -1,5 +1,5 @@
 #include <MorglodsRender.hpp>
-#include "Thread.hpp"
+#include <mu/Thread.hpp>
 #include <Types.hpp>
 #include <Utils/FilesIO.hpp>
 #include <Materials/Material.hpp>

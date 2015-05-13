@@ -1,6 +1,6 @@
-#include "TimedCounter.hpp"
+#include <mu/TimedCounter.hpp>
 
-#include <Buffers/BuffersManager.hpp>
+#include <Buffers/BufferManager.hpp>
 #include <Utils/Serialization.hpp>
 #include <Geometry/GeometryBuilder.hpp>
 #include <Geometry/GeometryObject.hpp>
@@ -13,8 +13,7 @@
 #include <Scene/SceneManager.hpp>
 #include <Scene/Entity.hpp>
 
-#include <Textures/TextureObjects.hpp>
-#include <Textures/TextureSettings.hpp>
+#include <Textures/TextureManager.hpp>
 
 #include <RTT/FrameBufferObjects.hpp>
 #include <RTT/RenderBufferObject.hpp>
@@ -26,27 +25,18 @@
 #include <Scene/SceneLoader.hpp>
 #include <Shaders/ShaderManager.hpp>
 
-#include <Macro.hpp>
-
-#include <Images/Image.hpp>
-#include <Images/SOILwrapper.hpp>
+#include <mu/Macro.hpp>
 
 class TestTriangle : public mr::SimpleApp {
 public:
-    mr::IGeometry* geom;
-    mr::IShaderProgram* prog;
-    mr::ITexture* tex;
-    mr::ITexture* tex2;
     mr::ModelPtr model;
     std::vector<mr::MeshPtr> meshes;
     mr::SceneManager sceneManager;
-    mr::IVertexAttribute* instAttrib;
+    mr::VertexAttribute instAttrib;
     mr::IGPUBuffer* instGpuBuff;
     mr::IGPUBuffer* lightsGpuBuff;
-    unsigned int lightsGpuBuff_bindindex = 0;
 
    int texColorUnit = 0;
-   int sphericalTexUnit = 1;
 
     struct LightDesc {
         glm::vec3 pos, color;
@@ -77,22 +67,19 @@ public:
         shaderManager->SetGlobalUniform("MR_MAT_MVP", mr::IShaderUniformRef::Mat4, camera->GetMVPPtr());
         shaderManager->SetGlobalUniform("MR_TEX_COLOR", mr::IShaderUniformRef::Sampler2D, &texColorUnit);
 
+        mr::ShaderUniformMap* shaderUniformMap = shaderManager->DefaultShaderProgram()->GetMap();
+        glUniformBlockBinding(shaderManager->DefaultShaderProgram()->GetGPUHandle(), shaderUniformMap->GetUniformBlock("MR_pointLights_block").location, 0);
+        glUniformBlockBinding(shaderManager->DefaultShaderProgram()->GetGPUHandle(), shaderUniformMap->GetUniformBlock("MR_Textures_Block").location, 1);
+
         //Create lights
 
         lightsList.Create(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
 
-        for(int i = 0; i < 20; ++i) {
-            lightsList.Create(glm::vec3(i*30,0.1f,0), glm::vec3(0.9,1,0.8), 1, 30);
-        }
-
         shaderManager->SetGlobalUniform("MR_numPointLights", mr::IShaderUniformRef::Int, &lightsList.num);
 
-        lightsGpuBuff = mr::GPUBuffersManager::GetInstance().CreateBuffer(mr::IGPUBuffer::FastChange, 16777216); //16mb
+        lightsGpuBuff = mr::GPUBufferManager::GetInstance().CreateBuffer(mr::IGPUBuffer::FastChange, 16777216); //16mb
 
-        mr::ShaderUniformMap* shaderUniformMap = shaderManager->DefaultShaderProgram()->GetMap();
         mr::ShaderUniformBlockInfo* blockInfo = &(shaderUniformMap->GetUniformBlock("MR_pointLights_block"));
-        lightsGpuBuff_bindindex = blockInfo->location;
-
         for(int i = 0; i < lightsList.num; ++i) {
             const std::string uniform_name = "MR_pointLights["+std::to_string(i)+"].";
             lightsGpuBuff->Write(&lightsList.pointLights[i].pos, 0, blockInfo->GetOffset(uniform_name+"pos"), sizeof(glm::vec3), nullptr, nullptr);
@@ -150,7 +137,7 @@ public:
 
         //Instancing
         unsigned int realInstNum = inst_num * inst_num;
-        instGpuBuff = mr::GPUBuffersManager::GetInstance().CreateBuffer(mr::IGPUBuffer::Static, sizeof(glm::vec3) * realInstNum);
+        instGpuBuff = mr::GPUBufferManager::GetInstance().CreateBuffer(mr::IGPUBuffer::Static, sizeof(glm::vec3) * realInstNum);
         if(instGpuBuff == nullptr) {
             std::cout << "Failed create instance gpu buffer." << std::endl;
             return false;
@@ -175,7 +162,8 @@ public:
             mappedInstGpuBuff->UnMap();
         }
 
-        instAttrib = new mr::VertexAttributeCustom(3, &mr::VertexDataTypeFloat::GetInstance(), 4, 1);
+        instAttrib.offset = 0;
+        instAttrib.desc = std::make_shared<mr::VertexAttributeDesc>(3, sizeof(float)*3, 4, 1, std::make_shared<mr::GeomDataType>(mr::GeomDataType::Float, sizeof(float)));
 
         auto geomsAr = scene_loader.GetGeometry();
         for(size_t i = 0; i < geomsAr.GetNum(); ++i) {
@@ -188,27 +176,6 @@ public:
         camera->SetPosition(glm::vec3(0.25f, 0.75f, -0.7f));
         camera->SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
         camera->SetFarZ(10000.0f);
-
-        //Make texture
-        tex = mr::Texture::FromFile(loadTexSrc);
-
-        if(tex) {
-            mr::StateCache* stateCache = mr::StateCache::GetDefault();
-            mr::ITextureSettings* texSettings = new mr::TextureSettings();
-            texSettings->Create();
-            tex->SetSettings(texSettings);
-            stateCache->BindTexture(tex, 0);
-        }
-
-        tex2 = mr::Texture::FromFile("material8.png");
-
-        if(tex2) {
-            mr::StateCache* stateCache = mr::StateCache::GetDefault();
-            mr::ITextureSettings* texSettings = new mr::TextureSettings();
-            texSettings->Create();
-            tex2->SetSettings(texSettings);
-            stateCache->BindTexture(tex2, 1);
-        }
 
         model = mr::ModelPtr(new mr::Model());
         mr::SubModel* subModel = new mr::SubModel();
@@ -238,7 +205,7 @@ public:
 
         window = context->GetWindow();
 
-        std::cout << std::endl << "GPU Buffers mem: " << mr::GPUBuffersManager::GetInstance().GetUsedGPUMemory() << std::endl;
+        std::cout << std::endl << "GPU Buffers mem: " << mr::GPUBufferManager::GetInstance().GetUsedGPUMemory() << std::endl;
 
         return true;
     }
@@ -307,7 +274,6 @@ public:
         mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
         shaderManager->UpdateAllGlobalUniforms();
         glUseProgram(shaderManager->DefaultShaderProgram()->GetGPUHandle());
-        glUniformBlockBinding(shaderManager->DefaultShaderProgram()->GetGPUHandle(), lightsGpuBuff_bindindex, 0);
         mr::StateCache::GetDefault()->BindUniformBuffer(lightsGpuBuff, 0);
         sceneManager.Draw();
 
