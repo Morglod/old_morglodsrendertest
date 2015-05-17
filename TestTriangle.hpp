@@ -15,8 +15,9 @@
 
 #include <Textures/TextureManager.hpp>
 
-#include <RTT/FrameBufferObjects.hpp>
-#include <RTT/RenderBufferObject.hpp>
+#include <RTT/RTTManager.hpp>
+#include <RTT/RenderBuffer.hpp>
+#include <RTT/FrameBuffer.hpp>
 
 #include <StateCache.hpp>
 
@@ -35,8 +36,6 @@ public:
     mr::VertexAttribute instAttrib;
     mr::IGPUBuffer* instGpuBuff;
     mr::IGPUBuffer* lightsGpuBuff;
-
-   int texColorUnit = 0;
 
     struct LightDesc {
         glm::vec3 pos, color;
@@ -65,7 +64,6 @@ public:
         mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
 
         shaderManager->SetGlobalUniform("MR_MAT_MVP", mr::IShaderUniformRef::Mat4, camera->GetMVPPtr());
-        shaderManager->SetGlobalUniform("MR_TEX_COLOR", mr::IShaderUniformRef::Sampler2D, &texColorUnit);
 
         mr::ShaderUniformMap* shaderUniformMap = shaderManager->DefaultShaderProgram()->GetMap();
         glUniformBlockBinding(shaderManager->DefaultShaderProgram()->GetGPUHandle(), shaderUniformMap->GetUniformBlock("MR_pointLights_block").location, 0);
@@ -74,6 +72,11 @@ public:
         //Create lights
 
         lightsList.Create(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,200), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,300), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,400), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,500), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,600), glm::vec3(0.9,1,0.8), 100, 800);
 
         shaderManager->SetGlobalUniform("MR_numPointLights", mr::IShaderUniformRef::Int, &lightsList.num);
 
@@ -90,7 +93,6 @@ public:
 
         ///TEST
         std::string loadModelSrc = "";
-        std::string loadTexSrc = "";
         float inst_x_offset = 10.0f;
         float inst_z_offset = 10.0f;
         unsigned int inst_num = 100;
@@ -98,9 +100,6 @@ public:
 #ifndef DEBUG_BUILD
         std::cout << "Load model: ";
         std::cin >> loadModelSrc;
-
-        std::cout << "Load tex: ";
-        std::cin >> loadTexSrc;
 
         std::cout << "Instance X offset (3700 - sponza): ";
         std::cin >> inst_x_offset;
@@ -112,7 +111,6 @@ public:
         std::cin >> inst_num;
 #else
         loadModelSrc = "pyr_test.obj";
-        loadTexSrc = "mramor6x6.png";
         inst_x_offset = 10.0f;
         inst_z_offset = 10.0f;
         inst_num = 2;
@@ -207,8 +205,21 @@ public:
 
         std::cout << std::endl << "GPU Buffers mem: " << mr::GPUBufferManager::GetInstance().GetUsedGPUMemory() << std::endl;
 
+        frameBuf = mr::RTTManager::GetInstance().CreateFrameBuffer();
+        mr::RenderBuffer* renderBufColor = mr::RTTManager::GetInstance().CreateRenderBuffer(mr::Texture::SDF_RGB8, glm::uvec2(800,600), 0);
+        mr::RenderBuffer* renderBufDepth = mr::RTTManager::GetInstance().CreateRenderBuffer(mr::Texture::SDF_DEPTH_COMPONENT24, glm::uvec2(800,600), 0);
+        frameBuf->AttachColor(renderBufColor, 0);
+        frameBuf->AttachDepth(renderBufDepth);
+
+        mr::FrameBuffer::CompletionInfo frameBufInfo = frameBuf->Complete();
+        mr::Log::LogString("FrameBuffer status: " + mr::FrameBuffer::CompletionInfoToString(frameBufInfo));
+
+        mr::StateCache::GetDefault()->DrawTo(frameBuf);
+
         return true;
     }
+
+    mr::FrameBuffer* frameBuf = nullptr;
 
     GLFWwindow* window;
     double mouse_x = 0.0, mouse_y = 0.0;
@@ -278,6 +289,11 @@ public:
         sceneManager.Draw();
 
         fps.Count(delta);
+
+        frameBuf->ToScreen(mr::FrameBuffer::ColorBit,
+                           glm::lowp_uvec4(0,0,800,600),
+                           glm::lowp_uvec4(0,0,800,600),
+                           true);
     }
 
     void Free() {
