@@ -33,7 +33,7 @@ public:
     mr::ModelPtr model;
     std::vector<mr::MeshPtr> meshes;
     mr::SceneManager sceneManager;
-    mr::VertexAttribute instAttrib;
+    //mr::VertexAttribute instAttrib;
     mr::IGPUBuffer* instGpuBuff;
     mr::IGPUBuffer* lightsGpuBuff;
 
@@ -71,12 +71,12 @@ public:
 
         //Create lights
 
-        lightsList.Create(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
-        lightsList.Create(glm::vec3(0,100,200), glm::vec3(0.9,1,0.8), 100, 800);
-        lightsList.Create(glm::vec3(0,100,300), glm::vec3(0.9,1,0.8), 100, 800);
-        lightsList.Create(glm::vec3(0,100,400), glm::vec3(0.9,1,0.8), 100, 800);
-        lightsList.Create(glm::vec3(0,100,500), glm::vec3(0.9,1,0.8), 100, 800);
-        lightsList.Create(glm::vec3(0,100,600), glm::vec3(0.9,1,0.8), 100, 800);
+        //lightsList.Create(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
+        //lightsList.Create(glm::vec3(0,100,200), glm::vec3(0.9,1,0.8), 100, 800);
+        //lightsList.Create(glm::vec3(0,100,300), glm::vec3(0.9,1,0.8), 100, 800);
+        //lightsList.Create(glm::vec3(0,100,400), glm::vec3(0.9,1,0.8), 100, 800);
+        //lightsList.Create(glm::vec3(0,100,500), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,600), glm::vec3(0.9,1,0.8), 50000, 50000);
 
         shaderManager->SetGlobalUniform("MR_numPointLights", mr::IShaderUniformRef::Int, &lightsList.num);
 
@@ -160,15 +160,23 @@ public:
             mappedInstGpuBuff->UnMap();
         }
 
-        instAttrib.offset = 0;
+        /*instAttrib.offset = 0;
         instAttrib.desc = std::make_shared<mr::VertexAttributeDesc>(3, sizeof(float)*3, 4, 1, std::make_shared<mr::GeomDataType>(mr::GeomDataType::Float, sizeof(float)));
-
+        */
         auto geomsAr = scene_loader.GetGeometry();
         for(size_t i = 0; i < geomsAr.GetNum(); ++i) {
             mr::IGeometry* geom = geomsAr.At(i);
-            geom->GetGeometryBuffer()->SetAttribute(instAttrib, instGpuBuff);
+            //geom->GetGeometryBuffer()->SetAttribute(instAttrib, instGpuBuff);
             geom->GetDrawParams()->SetInstancesNum(realInstNum);
         }
+
+        instGpuBuff->MakeResident();
+        uint64_t instGpuBuffAddress = 0;
+        if(!instGpuBuff->GetGPUAddress(instGpuBuffAddress)) {
+            std::cout << "!!!! Failed get resident ptr !!!!" << std::endl;
+            return false;
+        }
+        shaderManager->SetNVVBUMPointer(4, instGpuBuffAddress);
         ///
 
         camera->SetPosition(glm::vec3(0.25f, 0.75f, -0.7f));
