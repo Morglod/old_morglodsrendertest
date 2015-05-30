@@ -28,12 +28,11 @@
 
 #include <mu/Macro.hpp>
 
-class TestTriangle : public mr::SimpleApp {
+class TestTriangle : public mr::SimpleGLFWApp {
 public:
     mr::ModelPtr model;
     std::vector<mr::MeshPtr> meshes;
     mr::SceneManager sceneManager;
-    //mr::VertexAttribute instAttrib;
     mr::IGPUBuffer* instGpuBuff;
     mr::IGPUBuffer* lightsGpuBuff;
 
@@ -56,7 +55,7 @@ public:
 
     LightsList lightsList;
 
-    bool Setup() {
+    bool Setup() override {
         mr::machine::PrintInfo();
 
         //Setup shaders
@@ -64,6 +63,7 @@ public:
         mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
 
         shaderManager->SetGlobalUniform("MR_MAT_MVP", mr::IShaderUniformRef::Mat4, camera->GetMVPPtr());
+        shaderManager->SetGlobalUniform("MR_CAM_POS", mr::IShaderUniformRef::Vec3, camera->GetPositionPtr());
 
         mr::ShaderUniformMap* shaderUniformMap = shaderManager->DefaultShaderProgram()->GetMap();
         glUniformBlockBinding(shaderManager->DefaultShaderProgram()->GetGPUHandle(), shaderUniformMap->GetUniformBlock("MR_pointLights_block").location, 0);
@@ -71,12 +71,12 @@ public:
 
         //Create lights
 
-        //lightsList.Create(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
-        //lightsList.Create(glm::vec3(0,100,200), glm::vec3(0.9,1,0.8), 100, 800);
-        //lightsList.Create(glm::vec3(0,100,300), glm::vec3(0.9,1,0.8), 100, 800);
-        //lightsList.Create(glm::vec3(0,100,400), glm::vec3(0.9,1,0.8), 100, 800);
-        //lightsList.Create(glm::vec3(0,100,500), glm::vec3(0.9,1,0.8), 100, 800);
-        lightsList.Create(glm::vec3(0,100,600), glm::vec3(0.9,1,0.8), 50000, 50000);
+        lightsList.Create(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,200), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,300), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,400), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,500), glm::vec3(0.9,1,0.8), 100, 800);
+        lightsList.Create(glm::vec3(0,100,600), glm::vec3(1.2,1.2,1.2), 600, 1500);
 
         shaderManager->SetGlobalUniform("MR_numPointLights", mr::IShaderUniformRef::Int, &lightsList.num);
 
@@ -160,13 +160,9 @@ public:
             mappedInstGpuBuff->UnMap();
         }
 
-        /*instAttrib.offset = 0;
-        instAttrib.desc = std::make_shared<mr::VertexAttributeDesc>(3, sizeof(float)*3, 4, 1, std::make_shared<mr::GeomDataType>(mr::GeomDataType::Float, sizeof(float)));
-        */
         auto geomsAr = scene_loader.GetGeometry();
         for(size_t i = 0; i < geomsAr.GetNum(); ++i) {
             mr::IGeometry* geom = geomsAr.At(i);
-            //geom->GetGeometryBuffer()->SetAttribute(instAttrib, instGpuBuff);
             geom->GetDrawParams()->SetInstancesNum(realInstNum);
         }
 
@@ -241,7 +237,7 @@ public:
 
     FpsCounter fps;
 
-    void Frame(const float& delta) {
+    void Frame(const float& delta) override {
         //Camera moves
         float move_speed = 8.0f;
         const float mouse_speed = 0.15f;
@@ -259,6 +255,14 @@ public:
         }
         if(glfwGetKey(window, GLFW_KEY_F)) {
             lightsList.pointLights[0].pos -= glm::vec3(1000.0f * delta, 0, 0);
+            lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
+        }
+        if(glfwGetKey(window, GLFW_KEY_T)) {
+            lightsList.pointLights[0].pos += glm::vec3(0, 0, 1000.0f * delta);
+            lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
+        }
+        if(glfwGetKey(window, GLFW_KEY_G)) {
+            lightsList.pointLights[0].pos -= glm::vec3(0, 0, 1000.0f * delta);
             lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
         }
 
@@ -304,10 +308,10 @@ public:
                            true);
     }
 
-    void Free() {
+    void Free() override {
     }
 
-    TestTriangle() : mr::SimpleApp() {}
+    TestTriangle() : mr::SimpleGLFWApp() {}
     virtual ~TestTriangle() {  }
 };
 

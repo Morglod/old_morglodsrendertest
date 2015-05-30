@@ -4,7 +4,7 @@
 #include <Utils/FilesIO.hpp>
 #include <Materials/Material.hpp>
 
-#include <SimpleApp/SimpleApp.hpp>
+#include <SimpleApp/SimpleGLFWApp.hpp>
 
 /*
 //Do not use hybryd graphics
@@ -20,6 +20,7 @@ int SCREEN_CENTER_Y = 300;
 
 #include "TestTriangle.hpp"
 #include "Tests.hpp"
+#include "texture_streamer_test.hpp"
 
 int main() {
     mr::GLFWWindowHints hints;
@@ -47,8 +48,10 @@ int main() {
         else std::cout << "failed saving." << std::endl;
     }
 
-    TestTriangle app;
-    app.Go("MorglodsRender test", WINDOW_WIDTH, WINDOW_HEIGHT, hints);
+    texture_streamer_test_main(glm::vec2((float)WINDOW_WIDTH, (float)WINDOW_HEIGHT));
+
+    //TestTriangle app;
+    //app.Go("MorglodsRender test", WINDOW_WIDTH, WINDOW_HEIGHT, hints);
 
     return 0;
 }
