@@ -72,11 +72,14 @@
 		<Unit filename="TestLods.hpp" />
 		<Unit filename="TestOneBufferGeometry.hpp" />
 		<Unit filename="TestSponza.hpp" />
-		<Unit filename="TestTriangle.hpp" />
+		<Unit filename="TestTriangle_.hpp" />
 		<Unit filename="TestUI.hpp" />
 		<Unit filename="Tests.hpp" />
 		<Unit filename="main.cpp" />
 		<Unit filename="pthreads_ThreadTest.h" />
+		<Unit filename="sphere_phys.hpp" />
+		<Unit filename="texture_streamer_test.cpp" />
+		<Unit filename="texture_streamer_test.hpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

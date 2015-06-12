@@ -12,6 +12,9 @@
 #include <Scene/Entity.hpp>
 #include <RTT/FrameBuffer.hpp>
 #include <RTT/RTTManager.hpp>
+#include <Textures/TextureStreamer2D.hpp>
+#include <Textures/TextureData.hpp>
+#include <Textures/TextureManager.hpp>
 #include <Core.hpp>
 #include <Utils/Log.hpp>
 #include <MachineInfo.hpp>
@@ -20,7 +23,10 @@
 #include <mu/TimedCounter.hpp>
 
 #include <fstream>
+#include <stack>
 #include <iostream>
+#include <thread>
+#include <mutex>
 
 #define GLEW_STATIC
 #include <GL\glew.h>
@@ -61,13 +67,12 @@ void glfwError(int level, const char* desc) {
 
 }
 
-void texture_streamer_test_main(glm::vec2 const& sizes) {
-    mr::Log::Add(LogString);
+bool init_context(glm::vec2 const& sizes, GLFWwindow*& outMainWindow) {
     glfwSetErrorCallback(glfwError);
 
     if(!glfwInit()){
         mr::Log::LogString("Failed glfwInit in SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
-        return;
+        return false;
     }
 
     ///Setup video mode
@@ -77,101 +82,61 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
     glfwWindowHint(GLFW_RED_BITS, vidMode->redBits);
     glfwWindowHint(GLFW_GREEN_BITS, vidMode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, vidMode->blueBits);
-    const glm::vec2 screen_center = glm::vec2(sizes.x / 2.0f, sizes.y / 2.0f);
-
-    //Thread pull
-    const size_t threadPullSize = 1;
-    GLFWwindow* contextPull[threadPullSize+1]; //0 is default
-
-    //If need multithreaded mode
-    GLFWwindow* prevWindow = 0;
-    for(size_t i = 0; i < threadPullSize; ++i) {
-        contextPull[i+1] = prevWindow = glfwCreateWindow(1, 1, ("MorglodsRenderTest_"+std::to_string(i)).c_str(), 0, prevWindow);
-        if(!prevWindow) {
-            mr::Log::LogString("Failed glfw second window creation failed.", MR_LOG_LEVEL_ERROR);
-            return;
-        }
-    }
 
     ///Main context creation
     GLFWwindow* mainWindow = 0;
-    if((mainWindow = glfwCreateWindow(sizes.x, sizes.y, "MorglodsRenderTest", 0, prevWindow)) == 0) {
+    if((mainWindow = glfwCreateWindow(sizes.x, sizes.y, "MorglodsRenderTest", 0, 0)) == 0) {
         mr::Log::LogString("Failed glfw main window creation failed.", MR_LOG_LEVEL_ERROR);
-        return;
+        return false;
     }
-    contextPull[0] = mainWindow;
     glfwMakeContextCurrent(mainWindow);
 
     if(!mr::Init()) {
         mr::Log::LogString("Failed render initialization SimpleApp::Go.", MR_LOG_LEVEL_ERROR);
-        return;
+        return false;
     }
+
+    outMainWindow = mainWindow;
+    return true;
+}
+
+void texture_streamer_test_main(glm::vec2 const& sizes) {
+    const glm::vec2 screen_center = glm::vec2(sizes.x / 2.0f, sizes.y / 2.0f);
+
+    mr::Log::Add(LogString);
+    GLFWwindow* mainWindow = 0;
+    if(!init_context(sizes, mainWindow)) return;
 
     ///Machine info
     mr::machine::PrintInfo();
 
     ///Scene setup
+    mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
+    mr::SceneManager sceneManager;
+
     mr::PerspectiveCamera camera = mr::PerspectiveCamera( mr::Transform::WorldForwardVector() * 2.0f, glm::vec3(0,0,0), 90.0f, sizes.x / sizes.y, 0.1f, 500.0f);
     camera.SetAutoRecalc(true);
     camera.SetPosition(glm::vec3(0.25f, 0.75f, -0.7f));
     camera.SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.SetFarZ(10000.0f);
-
-    //Setup shaders
-    mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
-
-    shaderManager->SetGlobalUniform("MR_MAT_MVP", mr::IShaderUniformRef::Mat4, camera.GetMVPPtr());
-    shaderManager->SetGlobalUniform("MR_CAM_POS", mr::IShaderUniformRef::Vec3, camera.GetPositionPtr());
-
-    mr::ShaderUniformMap* shaderUniformMap = shaderManager->DefaultShaderProgram()->GetMap();
-    glUniformBlockBinding(shaderManager->DefaultShaderProgram()->GetGPUHandle(), shaderUniformMap->GetUniformBlock("MR_pointLights_block").location, 0);
-    glUniformBlockBinding(shaderManager->DefaultShaderProgram()->GetGPUHandle(), shaderUniformMap->GetUniformBlock("MR_Textures_Block").location, 1);
+    camera.Use(shaderManager); //add to sceneManager, not attach to shaderManager directly.; Set main camera in sceneManager
 
     //Create lights
-    struct LightDesc {
-        glm::vec3 pos, color;
-        float innerR, outerR;
-        LightDesc(glm::vec3 const& p, glm::vec3 const& c, float iR, float oR) : pos(p), color(c), innerR(iR), outerR(oR) {}
-    };
 
-    struct LightsList {
-        int num = 0;
-        std::vector<LightDesc> pointLights;
+    sceneManager.CreatePointLight(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
+    sceneManager.CreatePointLight(glm::vec3(0,100,200), glm::vec3(0.9,1,0.8), 100, 800);
+    sceneManager.CreatePointLight(glm::vec3(0,100,300), glm::vec3(0.9,1,0.8), 100, 800);
+    sceneManager.CreatePointLight(glm::vec3(0,100,400), glm::vec3(0.9,1,0.8), 100, 800);
+    sceneManager.CreatePointLight(glm::vec3(0,100,500), glm::vec3(0.9,1,0.8), 100, 800);
+    sceneManager.CreatePointLight(glm::vec3(0,100,600), glm::vec3(1.2,1.2,1.2), 600, 1500);
+    sceneManager.CompleteLights();
 
-        inline LightDesc& Create(glm::vec3 const& pos, glm::vec3 const& color, float innerR, float outerR) {
-            pointLights.push_back(LightDesc(pos, color, innerR, outerR));
-            num++;
-            return pointLights[pointLights.size()-1];
-        }
-    };
-
-    LightsList lightsList;
-
-    lightsList.Create(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
-    lightsList.Create(glm::vec3(0,100,200), glm::vec3(0.9,1,0.8), 100, 800);
-    lightsList.Create(glm::vec3(0,100,300), glm::vec3(0.9,1,0.8), 100, 800);
-    lightsList.Create(glm::vec3(0,100,400), glm::vec3(0.9,1,0.8), 100, 800);
-    lightsList.Create(glm::vec3(0,100,500), glm::vec3(0.9,1,0.8), 100, 800);
-    lightsList.Create(glm::vec3(0,100,600), glm::vec3(1.2,1.2,1.2), 600, 1500);
-
-    shaderManager->SetGlobalUniform("MR_numPointLights", mr::IShaderUniformRef::Int, &lightsList.num);
-
-    mr::IGPUBuffer* lightsGpuBuff = mr::GPUBufferManager::GetInstance().CreateBuffer(mr::IGPUBuffer::FastChange, 16777216); //16mb
-
-    mr::ShaderUniformBlockInfo* blockInfo = &(shaderUniformMap->GetUniformBlock("MR_pointLights_block"));
-    for(int i = 0; i < lightsList.num; ++i) {
-        const std::string uniform_name = "MR_pointLights["+std::to_string(i)+"].";
-        lightsGpuBuff->Write(&lightsList.pointLights[i].pos, 0, blockInfo->GetOffset(uniform_name+"pos"), sizeof(glm::vec3), nullptr, nullptr);
-        lightsGpuBuff->Write(&lightsList.pointLights[i].color, 0, blockInfo->GetOffset(uniform_name+"color"), sizeof(glm::vec3), nullptr, nullptr);
-        lightsGpuBuff->Write(&lightsList.pointLights[i].innerR, 0, blockInfo->GetOffset(uniform_name+"innerRange"), sizeof(float), nullptr, nullptr);
-        lightsGpuBuff->Write(&lightsList.pointLights[i].outerR, 0, blockInfo->GetOffset(uniform_name+"outerRange"), sizeof(float), nullptr, nullptr);
-    }
-
+    //Scene import
     std::string loadModelSrc = "";
     float inst_x_offset = 10.0f;
     float inst_z_offset = 10.0f;
     unsigned int inst_num = 100;
-
+//#define DEBUG_BUILD
 #ifndef DEBUG_BUILD
     std::cout << "Load model: ";
     std::cin >> loadModelSrc;
@@ -268,7 +233,6 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
         }
     );
 
-    mr::SceneManager sceneManager;
     mr::EntityPtr entity = sceneManager.CreateEntity(model);
     sceneManager.GetRootNode()->CreateChild()->AddChild(std::static_pointer_cast<mr::SceneNode>(entity));
 
@@ -318,7 +282,7 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
             move_speed += 1000.0f;
         }
 
-        int pos_offset = mr::ShaderManager::GetInstance()->DefaultShaderProgram()->GetMap()->GetUniformBlock("MR_pointLights_block").GetOffset("MR_pointLights[0].pos");
+        /*int pos_offset = mr::ShaderManager::GetInstance()->DefaultShaderProgram()->GetMap()->GetUniformBlock("MR_pointLights_block").GetOffset("MR_pointLights[0].pos");
         if(glfwGetKey(mainWindow, GLFW_KEY_R)) {
             lightsList.pointLights[0].pos += glm::vec3(1000.0f * delta, 0, 0);
             lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
@@ -334,7 +298,7 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
         if(glfwGetKey(mainWindow, GLFW_KEY_G)) {
             lightsList.pointLights[0].pos -= glm::vec3(0, 0, 1000.0f * delta);
             lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
-        }
+        }*/
 
         if(glfwGetKey(mainWindow, GLFW_KEY_W)) {
             camera.MoveForward(move_speed * delta);
@@ -366,8 +330,6 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
 
         mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
         shaderManager->UpdateAllGlobalUniforms();
-        glUseProgram(shaderManager->DefaultShaderProgram()->GetGPUHandle());
-        mr::StateCache::GetDefault()->BindUniformBuffer(lightsGpuBuff, 0);
         sceneManager.Draw();
 
         fps.Count(delta);
@@ -390,8 +352,5 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
     ///Shutdown
     mr::Shutdown();
     glfwMakeContextCurrent(0);
-    for(size_t i = 0; i < threadPullSize+1; ++i) {
-        glfwDestroyWindow(contextPull[threadPullSize-i]);
-    }
     glfwTerminate();
 }

@@ -62,7 +62,8 @@ public:
 
         mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
 
-        shaderManager->SetGlobalUniform("MR_MAT_MVP", mr::IShaderUniformRef::Mat4, camera->GetMVPPtr());
+        shaderManager->SetGlobalUniform("MR_MAT_VIEW", mr::IShaderUniformRef::Mat4, camera->Get);
+        shaderManager->SetGlobalUniform("MR_MAT_VIEW", mr::IShaderUniformRef::Mat4, camera->GetMVPPtr());
         shaderManager->SetGlobalUniform("MR_CAM_POS", mr::IShaderUniformRef::Vec3, camera->GetPositionPtr());
 
         mr::ShaderUniformMap* shaderUniformMap = shaderManager->DefaultShaderProgram()->GetMap();

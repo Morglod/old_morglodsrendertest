@@ -18,8 +18,6 @@ int WINDOW_HEIGHT = 600;
 int SCREEN_CENTER_X = 400;
 int SCREEN_CENTER_Y = 300;
 
-#include "TestTriangle.hpp"
-#include "Tests.hpp"
 #include "texture_streamer_test.hpp"
 
 int main() {
@@ -49,9 +47,6 @@ int main() {
     }
 
     texture_streamer_test_main(glm::vec2((float)WINDOW_WIDTH, (float)WINDOW_HEIGHT));
-
-    //TestTriangle app;
-    //app.Go("MorglodsRender test", WINDOW_WIDTH, WINDOW_HEIGHT, hints);
 
     return 0;
 }
