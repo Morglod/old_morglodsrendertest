@@ -82,6 +82,7 @@ bool init_context(glm::vec2 const& sizes, GLFWwindow*& outMainWindow) {
     glfwWindowHint(GLFW_RED_BITS, vidMode->redBits);
     glfwWindowHint(GLFW_GREEN_BITS, vidMode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, vidMode->blueBits);
+    //glfwWindowHint(GLFW_SAMPLES, 16);
 
     ///Main context creation
     GLFWwindow* mainWindow = 0;
@@ -107,6 +108,12 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
     GLFWwindow* mainWindow = 0;
     if(!init_context(sizes, mainWindow)) return;
 
+    //GL setup
+    glClearColor(0.2f, 0.2, 0.2, 1.0f);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glDepthFunc(GL_LESS);
+
     ///Machine info
     mr::machine::PrintInfo();
 
@@ -119,7 +126,7 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
     camera.SetPosition(glm::vec3(0.25f, 0.75f, -0.7f));
     camera.SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.SetFarZ(10000.0f);
-    camera.Use(shaderManager); //add to sceneManager, not attach to shaderManager directly.; Set main camera in sceneManager
+    sceneManager.SetMainCamera(&camera);
 
     //Create lights
 
@@ -136,7 +143,7 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
     float inst_x_offset = 10.0f;
     float inst_z_offset = 10.0f;
     unsigned int inst_num = 100;
-//#define DEBUG_BUILD
+
 #ifndef DEBUG_BUILD
     std::cout << "Load model: ";
     std::cin >> loadModelSrc;
@@ -159,6 +166,8 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
     mr::SceneLoader scene_loader;
     mr::SceneLoader::ImportOptions importOptions;
     unsigned char import_counter = 0;
+
+    //'Progress bar'
     importOptions.assimpProcessCallback = [&import_counter](float percent) -> bool {
         std::cout << "\rImporting";
         for(unsigned char i = 0; i < import_counter; ++i) {
@@ -168,21 +177,23 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
         if(import_counter > 3) import_counter = 0;
         return true;
     };
+
+    //Scene processing 'Progress bar'
     importOptions.progressCallback = [](mr::SceneLoader::ProgressInfo const& info) {
         std::cout << "\rMeshes (" << info.meshes << "/" << info.totalMeshes << "), Materials (" << info.materials << "/" << info.totalMaterials << ")";
     };
+
     scene_loader.Import(loadModelSrc, importOptions);
 
     //Instancing
-    unsigned int realInstNum = inst_num * inst_num;
-    mr::IGPUBuffer* instGpuBuff = mr::GPUBufferManager::GetInstance().CreateBuffer(mr::IGPUBuffer::Static, sizeof(glm::vec3) * realInstNum);
-    if(instGpuBuff == nullptr) {
-        std::cout << "Failed create instance gpu buffer." << std::endl;
-        return;
-    }
+    {
+        unsigned int realInstNum = inst_num * inst_num;
+        mr::IGPUBuffer* instGpuBuff = mr::GPUBufferManager::GetInstance().CreateBuffer(mr::IGPUBuffer::Static, sizeof(glm::vec3) * realInstNum);
+        if(instGpuBuff == nullptr) {
+            std::cout << "Failed create instance gpu buffer." << std::endl;
+            return;
+        }
 
-    mr::IGPUBuffer::IMappedRangePtr mappedInstGpuBuff = instGpuBuff->Map(0, sizeof(glm::vec3) * realInstNum, mr::IGPUBuffer::IMappedRange::Write | mr::IGPUBuffer::IMappedRange::Unsynchronized | mr::IGPUBuffer::IMappedRange::Invalidate);
-    if(mappedInstGpuBuff == nullptr) {
         glm::vec3 instPos[realInstNum];
         for(unsigned int ix = 0; ix < inst_num; ++ix) {
             for(unsigned int iy = 0; iy < inst_num; ++iy) {
@@ -190,56 +201,20 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
             }
         }
         instGpuBuff->Write(instPos, 0, 0, sizeof(glm::vec3) * realInstNum, nullptr, nullptr);
-    } else {
-        glm::vec3* instPos = (glm::vec3*)(mappedInstGpuBuff->Get());
-        for(unsigned int ix = 0; ix < inst_num; ++ix) {
-            for(unsigned int iy = 0; iy < inst_num; ++iy) {
-                instPos[ix*inst_num + iy] = glm::vec3(inst_x_offset * ix, 0.0f, inst_z_offset * iy);
-            }
+
+        instGpuBuff->MakeResident();
+        uint64_t instGpuBuffAddress = 0;
+        if(!instGpuBuff->GetGPUAddress(instGpuBuffAddress)) {
+            std::cout << "!!!! Failed get instances resident ptr !!!!" << std::endl;
+            return;
         }
-        mappedInstGpuBuff->UnMap();
+        shaderManager->SetGlobalUniform("MR_VERTEX_INSTANCED_POSITION", mr::IShaderUniformRef::Type::UInt64, &instGpuBuffAddress, true);
     }
 
-    auto geomsAr = scene_loader.GetGeometry();
-    for(size_t i = 0; i < geomsAr.GetNum(); ++i) {
-        mr::IGeometry* geom = geomsAr.At(i);
-        geom->GetDrawParams()->SetInstancesNum(realInstNum);
-    }
-
-    instGpuBuff->MakeResident();
-    uint64_t instGpuBuffAddress = 0;
-    if(!instGpuBuff->GetGPUAddress(instGpuBuffAddress)) {
-        std::cout << "!!!! Failed get resident ptr !!!!" << std::endl;
-        return;
-    }
-    shaderManager->SetNVVBUMPointer(4, instGpuBuffAddress);
-
-    mr::ModelPtr model = mr::ModelPtr(new mr::Model());
-    mr::SubModel* subModel = new mr::SubModel();
-
-    auto sceneMeshes = scene_loader.GetMeshes();
-    mr::TStaticArray<mr::MeshWeakPtr> subModelMeshes(sceneMeshes.GetNum());
-    std::vector<mr::MeshPtr> meshes;
-    for(size_t i = 0; i < sceneMeshes.GetNum(); ++i) {
-        meshes.push_back(mr::MeshPtr(sceneMeshes.At(i)));
-        subModelMeshes.At(i) = mr::MeshWeakPtr(meshes[meshes.size()-1]);
-    }
-
-    subModel->SetMeshes( subModelMeshes );
-
-    model->SetLods(
-        mr::TStaticArray<mr::SubModelPtr> {
-            mr::SubModelPtr(subModel)
-        }
-    );
+    mr::ModelPtr model = scene_loader.GetModel();
 
     mr::EntityPtr entity = sceneManager.CreateEntity(model);
     sceneManager.GetRootNode()->CreateChild()->AddChild(std::static_pointer_cast<mr::SceneNode>(entity));
-
-    glClearColor(0.2f, 0.2, 0.2, 1.0f);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glDepthFunc(GL_LESS);
 
     std::cout << std::endl << "GPU Buffers mem: " << mr::GPUBufferManager::GetInstance().GetUsedGPUMemory() << std::endl;
 
@@ -281,24 +256,6 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
         if(glfwGetKey(mainWindow, GLFW_KEY_LEFT_SHIFT)) {
             move_speed += 1000.0f;
         }
-
-        /*int pos_offset = mr::ShaderManager::GetInstance()->DefaultShaderProgram()->GetMap()->GetUniformBlock("MR_pointLights_block").GetOffset("MR_pointLights[0].pos");
-        if(glfwGetKey(mainWindow, GLFW_KEY_R)) {
-            lightsList.pointLights[0].pos += glm::vec3(1000.0f * delta, 0, 0);
-            lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
-        }
-        if(glfwGetKey(mainWindow, GLFW_KEY_F)) {
-            lightsList.pointLights[0].pos -= glm::vec3(1000.0f * delta, 0, 0);
-            lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
-        }
-        if(glfwGetKey(mainWindow, GLFW_KEY_T)) {
-            lightsList.pointLights[0].pos += glm::vec3(0, 0, 1000.0f * delta);
-            lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
-        }
-        if(glfwGetKey(mainWindow, GLFW_KEY_G)) {
-            lightsList.pointLights[0].pos -= glm::vec3(0, 0, 1000.0f * delta);
-            lightsGpuBuff->Write(&lightsList.pointLights[0].pos, 0, pos_offset, sizeof(glm::vec3), nullptr, nullptr);
-        }*/
 
         if(glfwGetKey(mainWindow, GLFW_KEY_W)) {
             camera.MoveForward(move_speed * delta);
