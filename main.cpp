@@ -46,7 +46,7 @@ int main() {
         else std::cout << "failed saving." << std::endl;
     }
 
-    texture_streamer_test_main(glm::vec2((float)WINDOW_WIDTH, (float)WINDOW_HEIGHT));
+    texture_streamer_test_main(glm::uvec2(WINDOW_WIDTH, WINDOW_HEIGHT));
 
     return 0;
 }

@@ -19,6 +19,8 @@
 #include <Utils/Log.hpp>
 #include <MachineInfo.hpp>
 #include <StateCache.hpp>
+#include "Geometry/BuiltInGeometry.hpp"
+#include <Geometry/VertexBuffer.hpp>
 
 #include <mu/TimedCounter.hpp>
 
@@ -67,7 +69,7 @@ void glfwError(int level, const char* desc) {
 
 }
 
-bool init_context(glm::vec2 const& sizes, GLFWwindow*& outMainWindow) {
+bool init_context(glm::uvec2 const& sizes, GLFWwindow*& outMainWindow) {
     glfwSetErrorCallback(glfwError);
 
     if(!glfwInit()){
@@ -101,12 +103,38 @@ bool init_context(glm::vec2 const& sizes, GLFWwindow*& outMainWindow) {
     return true;
 }
 
-void texture_streamer_test_main(glm::vec2 const& sizes) {
-    const glm::vec2 screen_center = glm::vec2(sizes.x / 2.0f, sizes.y / 2.0f);
+mr::ModelPtr ImportModel(std::string const& path) {
+    std::cout << "Importing \"" << path << "\"" << std::endl;
+    mr::SceneLoader scene_loader;
+    mr::SceneLoader::ImportOptions importOptions;
+    unsigned char import_counter = 0;
+
+    //'Progress bar'
+    importOptions.assimpProcessCallback = [&import_counter](float percent) -> bool {
+        std::cout << "\rImporting";
+        for(unsigned char i = 0; i < import_counter; ++i) {
+            std::cout << '.';
+        }
+        ++import_counter;
+        if(import_counter > 3) import_counter = 0;
+        return true;
+    };
+
+    //Scene processing 'Progress bar'
+    importOptions.progressCallback = [](mr::SceneLoader::ProgressInfo const& info) {
+        std::cout << "\rMeshes (" << info.meshes << "/" << info.totalMeshes << "), Materials (" << info.materials << "/" << info.totalMaterials << ")";
+    };
+
+    scene_loader.Import(path, importOptions);
+    return scene_loader.GetModel();
+}
+
+void texture_streamer_test_main(glm::uvec2 const& screen_size) {
+    const glm::vec2 screen_center = glm::vec2((float)screen_size.x / 2.0f, (float)screen_size.y / 2.0f);
 
     mr::Log::Add(LogString);
     GLFWwindow* mainWindow = 0;
-    if(!init_context(sizes, mainWindow)) return;
+    if(!init_context(screen_size, mainWindow)) return;
 
     //GL setup
     glClearColor(0.2f, 0.2, 0.2, 1.0f);
@@ -121,22 +149,41 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
     mr::ShaderManager* shaderManager = mr::ShaderManager::GetInstance();
     mr::SceneManager sceneManager;
 
-    mr::PerspectiveCamera camera = mr::PerspectiveCamera( mr::Transform::WorldForwardVector() * 2.0f, glm::vec3(0,0,0), 90.0f, sizes.x / sizes.y, 0.1f, 500.0f);
+    mr::PerspectiveCamera camera = mr::PerspectiveCamera( mr::Transform::WorldForwardVector() * 2.0f, glm::vec3(0,0,0), 90.0f, (float)screen_size.x / (float)screen_size.y, 0.1f, 500.0f);
     camera.SetAutoRecalc(true);
-    camera.SetPosition(glm::vec3(0.25f, 0.75f, -0.7f));
+    //camera.SetPosition(glm::vec3(0.25f, 0.75f, -0.7f));
+    camera.SetPosition(glm::vec3(0, 0, 0));
     camera.SetRotation(glm::vec3(0.0f, 0.0f, 0.0f));
     camera.SetFarZ(10000.0f);
     sceneManager.SetMainCamera(&camera);
 
     //Create lights
 
-    sceneManager.CreatePointLight(glm::vec3(0,100,100), glm::vec3(0.9,1,0.8), 100, 800);
-    sceneManager.CreatePointLight(glm::vec3(0,100,200), glm::vec3(0.9,1,0.8), 100, 800);
-    sceneManager.CreatePointLight(glm::vec3(0,100,300), glm::vec3(0.9,1,0.8), 100, 800);
-    sceneManager.CreatePointLight(glm::vec3(0,100,400), glm::vec3(0.9,1,0.8), 100, 800);
-    sceneManager.CreatePointLight(glm::vec3(0,100,500), glm::vec3(0.9,1,0.8), 100, 800);
-    sceneManager.CreatePointLight(glm::vec3(0,100,600), glm::vec3(1.2,1.2,1.2), 600, 1500);
+    const float colorScale = 1.6f;
+    sceneManager.CreatePointLight(glm::vec3(-400,100,000), glm::vec3(1,0.8,0.8)*colorScale, 100, 400);
+    sceneManager.CreatePointLight(glm::vec3(-100,100,000), glm::vec3(0.8,1,0.8)*colorScale, 100, 400);
+    sceneManager.CreatePointLight(glm::vec3(200,100,000), glm::vec3(0.8,0.8,1)*colorScale, 100, 400);
+    sceneManager.CreatePointLight(glm::vec3(500,100,000), glm::vec3(1,1,1)*colorScale, 100, 400);
     sceneManager.CompleteLights();
+
+    //Test VertexBuffer
+    {
+        auto gdatatype = std::make_shared<mr::GeomDataType>(GL_FLOAT, 4);
+        auto vattribd = std::make_shared<mr::VertexAttributeDesc>(2, 0, 0, gdatatype);
+        auto vformat = mr::VertexFormat::Create({mr::VertexAttribute(vattribd)});
+        auto vbuffer = mr::VertexBuffer::Create(vformat, 2);
+
+        struct TestVertex { char word[8]; };
+
+        TestVertex* words = vbuffer->MapVertex<TestVertex>();
+        words[0].word[5] = 'a';
+        words[1].word[7] = 'b';
+        vbuffer->UnMap();
+
+        words = vbuffer->MapVertex<TestVertex>();
+        std::cout << "vbo test: " << words[0].word[5] << " " << words[1].word[7] << std::endl;
+        vbuffer->UnMap();
+    }
 
     //Scene import
     std::string loadModelSrc = "";
@@ -163,32 +210,10 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
     inst_num = 2;
 #endif
 
-    mr::SceneLoader scene_loader;
-    mr::SceneLoader::ImportOptions importOptions;
-    unsigned char import_counter = 0;
-
-    //'Progress bar'
-    importOptions.assimpProcessCallback = [&import_counter](float percent) -> bool {
-        std::cout << "\rImporting";
-        for(unsigned char i = 0; i < import_counter; ++i) {
-            std::cout << '.';
-        }
-        ++import_counter;
-        if(import_counter > 3) import_counter = 0;
-        return true;
-    };
-
-    //Scene processing 'Progress bar'
-    importOptions.progressCallback = [](mr::SceneLoader::ProgressInfo const& info) {
-        std::cout << "\rMeshes (" << info.meshes << "/" << info.totalMeshes << "), Materials (" << info.materials << "/" << info.totalMaterials << ")";
-    };
-
-    scene_loader.Import(loadModelSrc, importOptions);
-
     //Instancing
     {
         unsigned int realInstNum = inst_num * inst_num;
-        mr::IGPUBuffer* instGpuBuff = mr::GPUBufferManager::GetInstance().CreateBuffer(mr::IGPUBuffer::Static, sizeof(glm::vec3) * realInstNum);
+        mr::IBuffer* instGpuBuff = mr::BufferManager::GetInstance().CreateBuffer(sizeof(glm::vec3) * realInstNum, mr::BufferUsage::Static);
         if(instGpuBuff == nullptr) {
             std::cout << "Failed create instance gpu buffer." << std::endl;
             return;
@@ -211,16 +236,20 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
         shaderManager->SetGlobalUniform("MR_VERTEX_INSTANCED_POSITION", mr::IShaderUniformRef::Type::UInt64, &instGpuBuffAddress, true);
     }
 
-    mr::ModelPtr model = scene_loader.GetModel();
+    mr::ModelPtr model = ImportModel(loadModelSrc);
 
     mr::EntityPtr entity = sceneManager.CreateEntity(model);
     sceneManager.GetRootNode()->CreateChild()->AddChild(std::static_pointer_cast<mr::SceneNode>(entity));
 
-    std::cout << std::endl << "GPU Buffers mem: " << mr::GPUBufferManager::GetInstance().GetUsedGPUMemory() << std::endl;
+    mr::ModelPtr quadModelPtr = ImportModel("engine/screenQuad.obj");
+    mr::EntityPtr entity2 = sceneManager.CreateEntity(quadModelPtr, "ent2");
+    sceneManager.GetRootNode()->CreateChild()->AddChild(std::static_pointer_cast<mr::SceneNode>(entity2));
+
+    std::cout << std::endl << "GPU Buffers mem: " << mr::BufferManager::GetInstance().GetUsedGPUMemory() << std::endl;
 
     mr::FrameBuffer* frameBuf = mr::RTTManager::GetInstance().CreateFrameBuffer();
-    mr::RenderBuffer* renderBufColor = mr::RTTManager::GetInstance().CreateRenderBuffer(mr::Texture::SDF_RGB8, glm::uvec2(800,600), 0);
-    mr::RenderBuffer* renderBufDepth = mr::RTTManager::GetInstance().CreateRenderBuffer(mr::Texture::SDF_DEPTH_COMPONENT24, glm::uvec2(800,600), 0);
+    mr::RenderBuffer* renderBufColor = mr::RTTManager::GetInstance().CreateRenderBuffer(mr::Texture::SDF_RGB8, screen_size, 0);
+    mr::RenderBuffer* renderBufDepth = mr::RTTManager::GetInstance().CreateRenderBuffer(mr::Texture::SDF_DEPTH_COMPONENT24, screen_size, 0);
     frameBuf->AttachColor(renderBufColor, 0);
     frameBuf->AttachDepth(renderBufDepth);
 
@@ -292,8 +321,8 @@ void texture_streamer_test_main(glm::vec2 const& sizes) {
         fps.Count(delta);
 
         frameBuf->ToScreen(mr::FrameBuffer::ColorBit,
-                           glm::lowp_uvec4(0,0,800,600),
-                           glm::lowp_uvec4(0,0,800,600),
+                           glm::lowp_uvec4(0,0,screen_size.x, screen_size.y),
+                           glm::lowp_uvec4(0,0,screen_size.x, screen_size.y),
                            true);
 
         glfwPollEvents();
